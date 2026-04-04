@@ -38,3 +38,8 @@ mobile/.dart_tool/
 mobile/build/
 mobile/.flutter-plugins
 mobile/.flutter-plugins-dependencies
+
+# Variables de entorno
+backend/.env
+backend/app/__pycache__/
+backend/app/db/__pycache__/
