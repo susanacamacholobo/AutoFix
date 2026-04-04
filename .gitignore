@@ -29,9 +29,9 @@ yarn-error.log*
 
 # Python
 backend/venv/
-backend/__pycache__/
-backend/*.pyc
-backend/*.pyo
+backend/**/__pycache__/
+backend/**/*.pyc
+backend/**/*.pyo
 
 # Flutter
 mobile/.dart_tool/
