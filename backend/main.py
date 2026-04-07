@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.db.database import engine
-from app.routers import usuarios
+from app.routers import usuarios, auth
 
 app = FastAPI(
     title="AutoFix API",
@@ -8,6 +8,7 @@ app = FastAPI(
     version="1.0.0"
 )
 
+app.include_router(auth.router)
 app.include_router(usuarios.router)
 
 @app.get("/")
