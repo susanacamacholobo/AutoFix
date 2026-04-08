@@ -1,0 +1,22 @@
+import 'package:flutter/material.dart';
+
+class DashboardScreen extends StatelessWidget {
+  const DashboardScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('AutoFix'),
+        backgroundColor: const Color(0xFFE63946),
+        foregroundColor: Colors.white,
+      ),
+      body: const Center(
+        child: Text(
+          'Bienvenido a AutoFix!',
+          style: TextStyle(fontSize: 24),
+        ),
+      ),
+    );
+  }
+}
