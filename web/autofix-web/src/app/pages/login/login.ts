@@ -17,8 +17,13 @@ export class LoginComponent {
   contrasena: string = '';
   error: string = '';
   cargando: boolean = false;
+  mostrarContrasena: boolean = false;
 
   constructor(private authService: AuthService, private router: Router) {}
+
+  toggleContrasena(): void {
+    this.mostrarContrasena = !this.mostrarContrasena;
+  }
 
   iniciarSesion(): void {
     this.error = '';

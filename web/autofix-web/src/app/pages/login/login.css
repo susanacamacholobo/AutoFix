@@ -72,6 +72,38 @@
   border-color: #e63946;
 }
 
+.input-password {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  overflow: hidden;
+  transition: border-color 0.2s;
+}
+
+.input-password:focus-within {
+  border-color: #e63946;
+}
+
+.input-password input {
+  border: none;
+  border-radius: 0;
+  flex: 1;
+}
+
+.input-password input:focus {
+  outline: none;
+  border: none;
+}
+
+.btn-ojo {
+  background: none;
+  border: none;
+  padding: 0 12px;
+  cursor: pointer;
+  font-size: 1.1rem;
+}
+
 .error-message {
   background-color: #fff0f0;
   color: #e63946;
@@ -80,6 +112,21 @@
   font-size: 0.9rem;
   margin-bottom: 16px;
   text-align: center;
+}
+
+.olvidaste {
+  text-align: right;
+  margin-bottom: 20px;
+}
+
+.olvidaste a {
+  font-size: 0.85rem;
+  color: #e63946;
+  text-decoration: none;
+}
+
+.olvidaste a:hover {
+  text-decoration: underline;
 }
 
 .btn-login {

@@ -21,16 +21,27 @@
 
       <div class="form-group">
         <label for="contrasena">Contraseña</label>
-        <input
-          type="password"
-          id="contrasena"
-          [(ngModel)]="contrasena"
-          placeholder="••••••••"
-        />
+        <div class="input-password">
+          <input
+            [type]="mostrarContrasena ? 'text' : 'password'"
+            id="contrasena"
+            [(ngModel)]="contrasena"
+            placeholder="••••••••"
+          />
+          <button class="btn-ojo" (click)="toggleContrasena()" type="button">
+            <span class="material-icons">
+              {{ mostrarContrasena ? 'visibility' : 'visibility_off' }}
+            </span>
+          </button>
+        </div>
       </div>
 
       <div class="error-message" *ngIf="error">
         {{ error }}
+      </div>
+
+      <div class="olvidaste">
+        <a href="#">¿Olvidaste tu contraseña?</a>
       </div>
 
       <button
