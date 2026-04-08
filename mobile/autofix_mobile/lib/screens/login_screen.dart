@@ -13,6 +13,7 @@ class _LoginScreenState extends State<LoginScreen> {
   final _contrasenaController = TextEditingController();
   final _authService = AuthService();
   bool _cargando = false;
+  bool _mostrarContrasena = false;
   String _error = '';
 
   void _iniciarSesion() async {
@@ -118,6 +119,10 @@ class _LoginScreenState extends State<LoginScreen> {
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                           ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFFE63946)),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -125,11 +130,26 @@ class _LoginScreenState extends State<LoginScreen> {
                       const SizedBox(height: 6),
                       TextField(
                         controller: _contrasenaController,
-                        obscureText: true,
+                        obscureText: !_mostrarContrasena,
                         decoration: InputDecoration(
                           hintText: '••••••••',
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide: const BorderSide(color: Color(0xFFE63946)),
+                          ),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
+                              color: const Color(0xFFE63946),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _mostrarContrasena = !_mostrarContrasena;
+                              });
+                            },
                           ),
                         ),
                       ),
@@ -148,7 +168,18 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                       ],
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 8),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: TextButton(
+                          onPressed: () {},
+                          child: const Text(
+                            '¿Olvidaste tu contraseña?',
+                            style: TextStyle(color: Color(0xFFE63946)),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
                       SizedBox(
                         width: double.infinity,
                         child: ElevatedButton(
