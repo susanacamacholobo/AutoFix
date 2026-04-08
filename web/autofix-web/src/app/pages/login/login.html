@@ -1,0 +1,45 @@
+<div class="login-container">
+  <div class="login-card">
+
+    <div class="login-header">
+      <h1>AutoFix</h1>
+      <p>Plataforma de Emergencias Vehiculares</p>
+    </div>
+
+    <div class="login-form">
+      <h2>Iniciar Sesión</h2>
+
+      <div class="form-group">
+        <label for="email">Email</label>
+        <input
+          type="email"
+          id="email"
+          [(ngModel)]="email"
+          placeholder="tucorreo@gmail.com"
+        />
+      </div>
+
+      <div class="form-group">
+        <label for="contrasena">Contraseña</label>
+        <input
+          type="password"
+          id="contrasena"
+          [(ngModel)]="contrasena"
+          placeholder="••••••••"
+        />
+      </div>
+
+      <div class="error-message" *ngIf="error">
+        {{ error }}
+      </div>
+
+      <button
+        (click)="iniciarSesion()"
+        [disabled]="cargando"
+        class="btn-login">
+        {{ cargando ? 'Ingresando...' : 'Ingresar' }}
+      </button>
+
+    </div>
+  </div>
+</div>
