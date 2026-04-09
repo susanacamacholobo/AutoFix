@@ -12,6 +12,18 @@ router = APIRouter(
     tags=["usuarios"]
 )
 
+@router.post("/registro", response_model=UsuarioResponse)
+def registrar_conductor(usuario: UsuarioCreate, db: Session = Depends(get_db)):
+    db_usuario = usuario_service.get_usuario_por_email(db, usuario.email)
+    if db_usuario:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+    nuevo_usuario = usuario_service.crear_usuario(db, usuario)
+    # Asignar rol de conductor automáticamente (rol_id=2)
+    nuevo_usuario.rol_id = 2
+    db.commit()
+    db.refresh(nuevo_usuario)
+    return nuevo_usuario
+
 @router.post("/", response_model=UsuarioResponse)
 def crear_usuario(usuario: UsuarioCreate, db: Session = Depends(get_db)):
     db_usuario = usuario_service.get_usuario_por_email(db, usuario.email)

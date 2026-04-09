@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.db.database import engine
-from app.routers import usuarios, auth, roles, permisos
+from app.routers import usuarios, auth, roles, permisos, vehiculos
 
 app = FastAPI(
     title="AutoFix API",
@@ -21,6 +21,7 @@ app.include_router(auth.router)
 app.include_router(usuarios.router)
 app.include_router(roles.router)
 app.include_router(permisos.router)
+app.include_router(vehiculos.router)
 
 @app.get("/")
 def root():
