@@ -23,6 +23,22 @@
   color: white;
   font-size: 1rem;
   opacity: 0.9;
+  flex: 1;
+}
+
+.btn-nav {
+  padding: 8px 16px;
+  background: white;
+  color: #e63946;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.2s;
+}
+
+.btn-nav:hover {
+  background-color: #f8d7da;
 }
 
 .content {
