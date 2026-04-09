@@ -29,7 +29,7 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (respuesta['access_token'] != null) {
-        Navigator.pushReplacementNamed(context, '/dashboard');
+        Navigator.pushReplacementNamed(context, '/dashboard', arguments: respuesta['access_token']);
       }
     } catch (e) {
       setState(() {

@@ -9,12 +9,19 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final token = ModalRoute.of(context)?.settings.arguments as String? ?? '';
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('AutoFix'),
         backgroundColor: const Color(0xFFE63946),
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.manage_accounts),
+            tooltip: 'Gestionar Roles',
+            onPressed: () => Navigator.pushNamed(context, '/roles', arguments: token),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
