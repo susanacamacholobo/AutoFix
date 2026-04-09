@@ -1,0 +1,79 @@
+<div class="roles-container">
+  <nav class="navbar">
+    <h1 class="navbar-title">AutoFix</h1>
+    <span class="navbar-subtitle">Gestión de Roles</span>
+  </nav>
+
+  <div class="content">
+
+    <div class="success-message" *ngIf="exito">{{ exito }}</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+
+    <!-- Crear nuevo rol -->
+    <div class="card">
+      <h2>Crear Nuevo Rol</h2>
+      <div class="form-row">
+        <input
+          type="text"
+          [(ngModel)]="nuevoRol.nombre"
+          placeholder="Nombre del rol"
+          class="input"
+        />
+        <input
+          type="text"
+          [(ngModel)]="nuevoRol.descripcion"
+          placeholder="Descripción"
+          class="input"
+        />
+        <button class="btn-primary" (click)="crearRol()">Crear Rol</button>
+      </div>
+    </div>
+
+    <!-- Lista de roles -->
+    <div class="card">
+      <h2>Roles del Sistema</h2>
+      <table class="tabla">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let rol of roles">
+            <td>{{ rol.id }}</td>
+            <td>
+              <span *ngIf="rolEditando?.id !== rol.id">{{ rol.nombre }}</span>
+              <input *ngIf="rolEditando?.id === rol.id" [(ngModel)]="rolEditando.nombre" class="input-sm" />
+            </td>
+            <td>
+              <span *ngIf="rolEditando?.id !== rol.id">{{ rol.descripcion }}</span>
+              <input *ngIf="rolEditando?.id === rol.id" [(ngModel)]="rolEditando.descripcion" class="input-sm" />
+            </td>
+            <td>
+              <span class="badge" [class.badge-active]="rol.activo" [class.badge-inactive]="!rol.activo">
+                {{ rol.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+            <td class="acciones">
+              <ng-container *ngIf="rolEditando?.id !== rol.id">
+                <button class="btn-edit" (click)="editarRol(rol)">Editar</button>
+                <button class="btn-toggle" (click)="desactivarRol(rol)">
+                  {{ rol.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </ng-container>
+              <ng-container *ngIf="rolEditando?.id === rol.id">
+                <button class="btn-primary" (click)="guardarEdicion()">Guardar</button>
+                <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+</div>
