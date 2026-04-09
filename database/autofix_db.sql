@@ -107,3 +107,28 @@ CREATE TABLE historial (
     observacion TEXT,
     fecha TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- ============================================
+-- TABLA: roles
+-- ============================================
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- RELACION: usuarios con roles
+-- ============================================
+ALTER TABLE usuarios ADD COLUMN rol_id INTEGER REFERENCES roles(id);
+
+-- ============================================
+-- ROLES BASE DEL SISTEMA
+-- ============================================
+INSERT INTO roles (nombre, descripcion) VALUES
+('administrador', 'Responsable de supervisar el funcionamiento general del sistema'),
+('conductor', 'Conductor que registra vehículos y reporta emergencias'),
+('taller', 'Taller mecánico que atiende solicitudes de emergencia'),
+('tecnico', 'Personal asignado por el taller para atender al conductor');
