@@ -1,0 +1,53 @@
+<div class="permisos-container">
+  <nav class="navbar">
+    <h1 class="navbar-title">AutoFix</h1>
+    <span class="navbar-subtitle">Gestión de Permisos</span>
+    <a routerLink="/roles" class="btn-nav">Volver a Roles</a>
+  </nav>
+
+  <div class="content">
+    <div class="success-message" *ngIf="exito">{{ exito }}</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+
+    <div class="layout">
+
+      <!-- Lista de roles -->
+      <div class="card roles-panel">
+        <h2>Selecciona un Rol</h2>
+        <div class="rol-item"
+          *ngFor="let rol of roles"
+          [class.selected]="rolSeleccionado?.id === rol.id"
+          (click)="seleccionarRol(rol)">
+          <span class="rol-nombre">{{ rol.nombre }}</span>
+          <span class="badge" [class.badge-active]="rol.activo" [class.badge-inactive]="!rol.activo">
+            {{ rol.activo ? 'Activo' : 'Inactivo' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Lista de permisos -->
+      <div class="card permisos-panel">
+        <h2>
+          Permisos
+          <span *ngIf="rolSeleccionado" class="rol-tag">{{ rolSeleccionado.nombre }}</span>
+        </h2>
+        <p *ngIf="!rolSeleccionado" class="hint">Selecciona un rol para gestionar sus permisos</p>
+        <div class="permiso-item" *ngFor="let permiso of permisos">
+          <div class="permiso-info">
+            <span class="permiso-nombre">{{ permiso.nombre }}</span>
+            <span class="permiso-desc">{{ permiso.descripcion }}</span>
+          </div>
+          <label class="toggle" *ngIf="rolSeleccionado">
+            <input
+              type="checkbox"
+              [checked]="tienePermiso(permiso.id)"
+              (change)="togglePermiso(permiso)"
+            />
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>

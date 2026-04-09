@@ -1,12 +1,13 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RolesService } from '../../services/roles';
+import { RouterLink } from '@angular/router';
 
 @Component({
   selector: 'app-roles',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, RouterLink],
   templateUrl: './roles.html',
   styleUrl: './roles.css'
 })
@@ -18,7 +19,10 @@ export class RolesComponent implements OnInit {
   error: string = '';
   exito: string = '';
 
-  constructor(private rolesService: RolesService) {}
+  constructor(
+    private rolesService: RolesService,
+    private cdr: ChangeDetectorRef
+  ) {}
 
   ngOnInit(): void {
     this.cargarRoles();
@@ -26,7 +30,10 @@ export class RolesComponent implements OnInit {
 
   cargarRoles(): void {
     this.rolesService.listarRoles().subscribe({
-      next: (roles) => this.roles = roles,
+      next: (roles) => {
+        this.roles = roles;
+        this.cdr.detectChanges();
+      },
       error: () => this.error = 'Error al cargar los roles'
     });
   }
