@@ -132,3 +132,58 @@ INSERT INTO roles (nombre, descripcion) VALUES
 ('conductor', 'Conductor que registra vehículos y reporta emergencias'),
 ('taller', 'Taller mecánico que atiende solicitudes de emergencia'),
 ('tecnico', 'Personal asignado por el taller para atender al conductor');
+
+-- ============================================
+-- TABLA: permisos
+-- ============================================
+CREATE TABLE permisos (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(100) UNIQUE NOT NULL,
+    descripcion VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- TABLA: rol_permisos
+-- ============================================
+CREATE TABLE rol_permisos (
+    id SERIAL PRIMARY KEY,
+    rol_id INTEGER REFERENCES roles(id),
+    permiso_id INTEGER REFERENCES permisos(id),
+    UNIQUE(rol_id, permiso_id)
+);
+
+-- ============================================
+-- PERMISOS BASE DEL SISTEMA
+-- ============================================
+INSERT INTO permisos (nombre, descripcion) VALUES
+('ver_dashboard', 'Acceso al panel principal'),
+('gestionar_roles', 'Crear, editar y desactivar roles'),
+('gestionar_usuarios', 'Ver y gestionar usuarios del sistema'),
+('reportar_emergencia', 'Reportar una emergencia vehicular'),
+('ver_emergencias', 'Ver lista de emergencias'),
+('gestionar_emergencias', 'Aceptar, rechazar y gestionar emergencias'),
+('gestionar_tecnicos', 'Registrar y gestionar técnicos del taller'),
+('ver_historial', 'Ver historial de atenciones'),
+('gestionar_pagos', 'Realizar y gestionar pagos'),
+('asignar_tecnico', 'Asignar técnico a una emergencia');
+
+-- ============================================
+-- ASIGNACION DE PERMISOS POR ROL
+-- ============================================
+-- Administrador
+INSERT INTO rol_permisos (rol_id, permiso_id) VALUES
+(1, 1), (1, 2), (1, 3), (1, 4), (1, 5), (1, 6), (1, 7), (1, 8), (1, 9), (1, 10);
+
+-- Conductor
+INSERT INTO rol_permisos (rol_id, permiso_id) VALUES
+(2, 1), (2, 4), (2, 5), (2, 8), (2, 9);
+
+-- Taller
+INSERT INTO rol_permisos (rol_id, permiso_id) VALUES
+(3, 1), (3, 5), (3, 6), (3, 7), (3, 8), (3, 10);
+
+-- Tecnico
+INSERT INTO rol_permisos (rol_id, permiso_id) VALUES
+(4, 1), (4, 5), (4, 8);
