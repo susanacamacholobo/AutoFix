@@ -7,6 +7,17 @@
 -- CREATE DATABASE autofix;
 
 -- ============================================
+-- TABLA: roles
+-- ============================================
+CREATE TABLE roles (
+    id SERIAL PRIMARY KEY,
+    nombre VARCHAR(50) UNIQUE NOT NULL,
+    descripcion VARCHAR(255),
+    activo BOOLEAN DEFAULT TRUE,
+    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
 -- TABLA: usuarios
 -- ============================================
 CREATE TABLE usuarios (
@@ -17,21 +28,8 @@ CREATE TABLE usuarios (
     telefono VARCHAR(20),
     contrasena VARCHAR(255) NOT NULL,
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    activo BOOLEAN DEFAULT TRUE
-);
-
--- ============================================
--- TABLA: vehiculos
--- ============================================
-CREATE TABLE vehiculos (
-    id SERIAL PRIMARY KEY,
-    usuario_id INTEGER REFERENCES usuarios(id),
-    marca VARCHAR(50) NOT NULL,
-    modelo VARCHAR(50) NOT NULL,
-    anio INTEGER,
-    placa VARCHAR(20) UNIQUE NOT NULL,
-    color VARCHAR(30),
-    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    activo BOOLEAN DEFAULT TRUE,
+    rol_id INTEGER REFERENCES roles(id)
 );
 
 -- ============================================
@@ -43,6 +41,7 @@ CREATE TABLE talleres (
     email VARCHAR(150) UNIQUE NOT NULL,
     telefono VARCHAR(20),
     direccion VARCHAR(255),
+    especialidad VARCHAR(150),
     latitud DECIMAL(9,6),
     longitud DECIMAL(9,6),
     contrasena VARCHAR(255) NOT NULL,
@@ -62,6 +61,20 @@ CREATE TABLE tecnicos (
     especialidad VARCHAR(100),
     disponible BOOLEAN DEFAULT TRUE,
     activo BOOLEAN DEFAULT TRUE,
+    fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ============================================
+-- TABLA: vehiculos
+-- ============================================
+CREATE TABLE vehiculos (
+    id SERIAL PRIMARY KEY,
+    usuario_id INTEGER REFERENCES usuarios(id),
+    marca VARCHAR(50) NOT NULL,
+    modelo VARCHAR(50) NOT NULL,
+    anio INTEGER,
+    placa VARCHAR(20) UNIQUE NOT NULL,
+    color VARCHAR(30),
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -109,31 +122,6 @@ CREATE TABLE historial (
 );
 
 -- ============================================
--- TABLA: roles
--- ============================================
-CREATE TABLE roles (
-    id SERIAL PRIMARY KEY,
-    nombre VARCHAR(50) UNIQUE NOT NULL,
-    descripcion VARCHAR(255),
-    activo BOOLEAN DEFAULT TRUE,
-    fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
-
--- ============================================
--- RELACION: usuarios con roles
--- ============================================
-ALTER TABLE usuarios ADD COLUMN rol_id INTEGER REFERENCES roles(id);
-
--- ============================================
--- ROLES BASE DEL SISTEMA
--- ============================================
-INSERT INTO roles (nombre, descripcion) VALUES
-('administrador', 'Responsable de supervisar el funcionamiento general del sistema'),
-('conductor', 'Conductor que registra vehículos y reporta emergencias'),
-('taller', 'Taller mecánico que atiende solicitudes de emergencia'),
-('tecnico', 'Personal asignado por el taller para atender al conductor');
-
--- ============================================
 -- TABLA: permisos
 -- ============================================
 CREATE TABLE permisos (
@@ -153,6 +141,16 @@ CREATE TABLE rol_permisos (
     permiso_id INTEGER REFERENCES permisos(id),
     UNIQUE(rol_id, permiso_id)
 );
+
+-- ============================================
+-- ROLES BASE DEL SISTEMA
+-- ============================================
+INSERT INTO roles (nombre, descripcion) VALUES
+('Administrador', 'Responsable de supervisar el funcionamiento general del sistema'),
+('Conductor', 'Conductor que registra vehículos y reporta emergencias'),
+('Taller', 'Taller mecánico que atiende solicitudes de emergencia'),
+('Tecnico', 'Personal asignado por el taller para atender al conductor'),
+('Inteligencia Artificial', 'Clasifica el tipo de incidente, asigna un nivel de prioridad y genera un resumen del incidente');
 
 -- ============================================
 -- PERMISOS BASE DEL SISTEMA
