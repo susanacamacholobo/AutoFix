@@ -1,0 +1,102 @@
+<div class="tecnicos-container">
+  <nav class="navbar">
+    <h1 class="navbar-title">AutoFix</h1>
+    <span class="navbar-subtitle">Mis Técnicos</span>
+    <a routerLink="/dashboard" class="btn-nav">Volver al Dashboard</a>
+  </nav>
+
+  <div class="content">
+    <div class="success-message" *ngIf="exito">{{ exito }}</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+
+    <div class="header-actions">
+      <button class="btn-primary" (click)="mostrarFormulario = !mostrarFormulario">
+        {{ mostrarFormulario ? 'Cancelar' : '+ Agregar Técnico' }}
+      </button>
+    </div>
+
+    <!-- Formulario nuevo técnico -->
+    <div class="card" *ngIf="mostrarFormulario">
+      <h2>Registrar Nuevo Técnico</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Nombre *</label>
+          <input type="text" [(ngModel)]="nuevoTecnico.nombre" placeholder="Juan" />
+        </div>
+        <div class="form-group">
+          <label>Apellido *</label>
+          <input type="text" [(ngModel)]="nuevoTecnico.apellido" placeholder="Pérez" />
+        </div>
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="nuevoTecnico.telefono" placeholder="78901234" />
+        </div>
+        <div class="form-group">
+          <label>Especialidad</label>
+          <input type="text" [(ngModel)]="nuevoTecnico.especialidad" placeholder="Mecánica general" />
+        </div>
+      </div>
+      <button class="btn-primary" (click)="agregarTecnico()" [disabled]="cargando">
+        {{ cargando ? 'Guardando...' : 'Guardar Técnico' }}
+      </button>
+    </div>
+
+    <!-- Lista de técnicos -->
+    <div class="card">
+      <h2>Mis Técnicos</h2>
+      <div *ngIf="tecnicos.length === 0" class="empty-state">
+        No tienes técnicos registrados aún.
+      </div>
+      <table class="tabla" *ngIf="tecnicos.length > 0">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Especialidad</th>
+            <th>Teléfono</th>
+            <th>Disponibilidad</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let tecnico of tecnicos" [class.tecnico-inactivo]="!tecnico.activo">
+            <td>
+              <span *ngIf="tecnicoEditando?.id !== tecnico.id">{{ tecnico.nombre }} {{ tecnico.apellido }}</span>
+              <div *ngIf="tecnicoEditando?.id === tecnico.id" class="edit-row">
+                <input [(ngModel)]="tecnicoEditando.nombre" class="input-sm" placeholder="Nombre" />
+                <input [(ngModel)]="tecnicoEditando.apellido" class="input-sm" placeholder="Apellido" />
+              </div>
+            </td>
+            <td>
+              <span *ngIf="tecnicoEditando?.id !== tecnico.id">{{ tecnico.especialidad || '-' }}</span>
+              <input *ngIf="tecnicoEditando?.id === tecnico.id" [(ngModel)]="tecnicoEditando.especialidad" class="input-sm" />
+            </td>
+            <td>
+              <span *ngIf="tecnicoEditando?.id !== tecnico.id">{{ tecnico.telefono || '-' }}</span>
+              <input *ngIf="tecnicoEditando?.id === tecnico.id" [(ngModel)]="tecnicoEditando.telefono" class="input-sm" />
+            </td>
+            <td>
+              <span class="badge" [class.badge-active]="tecnico.disponible" [class.badge-inactive]="!tecnico.disponible">
+                {{ tecnico.disponible ? 'Disponible' : 'No disponible' }}
+              </span>
+            </td>
+            <td class="acciones">
+              <ng-container *ngIf="tecnicoEditando?.id !== tecnico.id">
+                <button class="btn-edit" (click)="editarTecnico(tecnico)">Editar</button>
+                <button class="btn-toggle" (click)="toggleDisponibilidad(tecnico)">
+                  {{ tecnico.disponible ? 'No disponible' : 'Disponible' }}
+                </button>
+                <button class="btn-delete" (click)="eliminarTecnico(tecnico)">
+                  {{ tecnico.activo ? 'Desactivar' : 'Activar' }}
+                </button>
+              </ng-container>
+              <ng-container *ngIf="tecnicoEditando?.id === tecnico.id">
+                <button class="btn-primary" (click)="guardarEdicion()">Guardar</button>
+                <button class="btn-cancel" (click)="cancelarEdicion()">Cancelar</button>
+              </ng-container>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,116 @@
+<div class="registro-container">
+  <div class="registro-card">
+
+    <div class="registro-header">
+      <h1>AutoFix</h1>
+      <p>{{ paso === 1 ? 'Datos del taller' : 'Tu primer técnico' }}</p>
+    </div>
+
+    <div class="registro-form">
+
+      <!-- PASO 1: Datos del taller -->
+      <div *ngIf="paso === 1">
+        <div class="paso-header">
+          <button class="btn-volver" routerLink="/registro">← Volver</button>
+          <span class="paso-indicator">Paso 1 de 2</span>
+        </div>
+        <h2>Datos del Taller</h2>
+
+        <div class="form-group">
+          <label>Nombre del taller *</label>
+          <input type="text" [(ngModel)]="taller.nombre" placeholder="Taller Mecánico XYZ" />
+        </div>
+
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="taller.email" placeholder="taller@gmail.com" />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="taller.telefono" placeholder="78901234" />
+        </div>
+
+        <div class="form-group">
+          <label>Dirección</label>
+          <input type="text" [(ngModel)]="taller.direccion" placeholder="Av. Principal #123" />
+        </div>
+
+        <div class="form-group">
+          <label>Especialidad</label>
+          <input type="text" [(ngModel)]="taller.especialidad" placeholder="Mecánica general, eléctrico, etc." />
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <div class="input-password">
+            <input
+              [type]="mostrarContrasena ? 'text' : 'password'"
+              [(ngModel)]="taller.contrasena"
+              placeholder="••••••••"
+            />
+            <button class="btn-ojo" (click)="toggleContrasena()" type="button">
+              <span class="material-icons">
+                {{ mostrarContrasena ? 'visibility' : 'visibility_off' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar Contraseña *</label>
+          <input
+            [type]="mostrarContrasena ? 'text' : 'password'"
+            [(ngModel)]="taller.confirmar_contrasena"
+            placeholder="••••••••"
+          />
+        </div>
+
+        <div class="error-message" *ngIf="error">{{ error }}</div>
+
+        <button class="btn-registro" (click)="siguientePaso()">
+          Siguiente → Registrar Técnico
+        </button>
+      </div>
+
+      <!-- PASO 2: Datos del técnico -->
+      <div *ngIf="paso === 2">
+        <div class="paso-header">
+          <button class="btn-volver" (click)="paso = 1">← Volver</button>
+          <span class="paso-indicator">Paso 2 de 2</span>
+        </div>
+        <h2>Tu primer técnico</h2>
+        <p class="subtitulo">Agrega al menos un técnico para continuar</p>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="tecnico.nombre" placeholder="Juan" />
+          </div>
+          <div class="form-group">
+            <label>Apellido *</label>
+            <input type="text" [(ngModel)]="tecnico.apellido" placeholder="Lopez" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="tecnico.telefono" placeholder="78901234" />
+        </div>
+
+        <div class="form-group">
+          <label>Especialidad</label>
+          <input type="text" [(ngModel)]="tecnico.especialidad" placeholder="Mecánica general" />
+        </div>
+
+        <div class="error-message" *ngIf="error">{{ error }}</div>
+        <div class="success-message" *ngIf="exito">{{ exito }}</div>
+
+        <button class="btn-registro" (click)="registrarse()" [disabled]="cargando">
+          {{ cargando ? 'Registrando...' : 'Registrar Taller' }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>

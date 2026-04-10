@@ -3,7 +3,8 @@ from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.taller import TallerCreate, TallerResponse
 from app.schemas.tecnico import TecnicoCreate, TecnicoUpdate, TecnicoResponse
-from app.services import taller_service, tecnico_service
+from app.schemas.usuario import UsuarioCreate
+from app.services import taller_service, tecnico_service, usuario_service
 from app.core.dependencies import get_current_user
 from app.models.usuario import Usuario
 from typing import List
@@ -15,10 +16,32 @@ router = APIRouter(
 
 @router.post("/registro", response_model=TallerResponse)
 def registrar_taller(taller: TallerCreate, db: Session = Depends(get_db)):
+    # Verificar si el email ya existe en talleres
     db_taller = taller_service.get_taller_por_email(db, taller.email)
     if db_taller:
         raise HTTPException(status_code=400, detail="El email ya está registrado")
-    return taller_service.crear_taller(db, taller)
+
+    # Verificar si el email ya existe en usuarios
+    db_usuario = usuario_service.get_usuario_por_email(db, taller.email)
+    if db_usuario:
+        raise HTTPException(status_code=400, detail="El email ya está registrado")
+
+    # Crear taller
+    nuevo_taller = taller_service.crear_taller(db, taller)
+
+    # Crear usuario con rol taller (rol_id=3)
+    usuario_data = UsuarioCreate(
+        nombre=taller.nombre,
+        apellido="Taller",
+        email=taller.email,
+        telefono=taller.telefono,
+        contrasena=taller.contrasena
+    )
+    nuevo_usuario = usuario_service.crear_usuario(db, usuario_data)
+    nuevo_usuario.rol_id = 3
+    db.commit()
+
+    return nuevo_taller
 
 @router.get("/", response_model=List[TallerResponse])
 def listar_talleres(
@@ -26,6 +49,16 @@ def listar_talleres(
     current_user: Usuario = Depends(get_current_user)
 ):
     return taller_service.get_talleres(db)
+
+@router.get("/mi-taller", response_model=TallerResponse)
+def obtener_mi_taller(
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    db_taller = taller_service.get_taller_por_email(db, current_user.email)
+    if not db_taller:
+        raise HTTPException(status_code=404, detail="Taller no encontrado")
+    return db_taller
 
 @router.get("/{id}", response_model=TallerResponse)
 def obtener_taller(

@@ -5,6 +5,9 @@
       <a routerLink="/mis-vehiculos" class="btn-nav" *ngIf="rol.toLowerCase() === 'conductor' || rol.toLowerCase() === 'administrador'">
         Mis Vehículos
       </a>
+      <a routerLink="/mis-tecnicos" class="btn-nav" *ngIf="rol.toLowerCase() === 'taller' || rol.toLowerCase() === 'administrador'">
+        Mis Técnicos
+      </a>
       <a routerLink="/roles" class="btn-nav" *ngIf="rol.toLowerCase() === 'administrador'">
         Gestionar Roles
       </a>
