@@ -3,6 +3,8 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
 import 'screens/roles_screen.dart';
 import 'screens/permisos_screen.dart';
+import 'screens/registro_screen.dart';
+import 'screens/mis_vehiculos_screen.dart';
 
 void main() {
   runApp(const AutoFixApp());
@@ -25,9 +27,15 @@ class AutoFixApp extends StatelessWidget {
       initialRoute: '/login',
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/dashboard': (context) => const DashboardScreen(),
+        '/registro': (context) => const RegistroScreen(),
       },
       onGenerateRoute: (settings) {
+        if (settings.name == '/dashboard') {
+          final token = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => DashboardScreen(token: token),
+          );
+        }
         if (settings.name == '/roles') {
           final token = settings.arguments as String;
           return MaterialPageRoute(
@@ -38,6 +46,12 @@ class AutoFixApp extends StatelessWidget {
           final token = settings.arguments as String;
           return MaterialPageRoute(
             builder: (context) => PermisosScreen(token: token),
+          );
+        }
+        if (settings.name == '/mis-vehiculos') {
+          final token = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => MisVehiculosScreen(token: token),
           );
         }
         return null;

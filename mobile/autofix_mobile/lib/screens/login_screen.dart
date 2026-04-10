@@ -203,6 +203,17 @@ class _LoginScreenState extends State<LoginScreen> {
                                 ),
                         ),
                       ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text('¿No tienes cuenta? ', style: TextStyle(color: Colors.grey)),
+                          GestureDetector(
+                            onTap: () => Navigator.pushNamed(context, '/registro'),
+                            child: const Text('Regístrate aquí', style: TextStyle(color: Color(0xFFE63946), fontWeight: FontWeight.bold)),
+                          ),
+                        ],
+                      ),
                     ],
                   ),
                 ),
