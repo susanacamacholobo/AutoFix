@@ -52,6 +52,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
               tooltip: 'Mis Vehículos',
               onPressed: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
             ),
+          if (_rol == 'taller' || _rol == 'administrador')
+            IconButton(
+              icon: const Icon(Icons.engineering),
+              tooltip: 'Mis Técnicos',
+              onPressed: () => Navigator.pushNamed(context, '/mis-tecnicos', arguments: widget.token),
+            ),
           if (_rol == 'administrador')
             IconButton(
               icon: const Icon(Icons.manage_accounts),

@@ -183,27 +183,23 @@ class _RegistroScreenState extends State<RegistroScreen> {
                         ),
                         const SizedBox(width: 12),
                         Expanded(
-                          child: Container(
-                            padding: const EdgeInsets.all(20),
-                            decoration: BoxDecoration(
-                              border: Border.all(color: Colors.grey.shade300),
-                              borderRadius: BorderRadius.circular(12),
-                              color: Colors.grey.shade100,
-                            ),
-                            child: Column(
-                              children: [
-                                const Text('🔧', style: TextStyle(fontSize: 32)),
-                                const SizedBox(height: 8),
-                                Text('Tengo un Taller', style: TextStyle(fontWeight: FontWeight.bold, color: Colors.grey.shade500)),
-                                const SizedBox(height: 4),
-                                Text('Quiero ofrecer servicios', style: TextStyle(fontSize: 11, color: Colors.grey.shade400), textAlign: TextAlign.center),
-                                const SizedBox(height: 8),
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                                  decoration: BoxDecoration(color: Colors.grey.shade200, borderRadius: BorderRadius.circular(12)),
-                                  child: Text('Próximamente', style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
-                                ),
-                              ],
+                          child: GestureDetector(
+                            onTap: () => Navigator.pushReplacementNamed(context, '/registro-taller'),
+                            child: Container(
+                              padding: const EdgeInsets.all(20),
+                              decoration: BoxDecoration(
+                                border: Border.all(color: const Color(0xFFE63946), width: 2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: const Column(
+                                children: [
+                                  Text('🔧', style: TextStyle(fontSize: 32)),
+                                  SizedBox(height: 8),
+                                  Text('Tengo un Taller', style: TextStyle(fontWeight: FontWeight.bold)),
+                                  SizedBox(height: 4),
+                                  Text('Quiero ofrecer servicios', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
+                                ],
+                              ),
                             ),
                           ),
                         ),
