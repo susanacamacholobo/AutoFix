@@ -21,6 +21,10 @@ export class AuthService {
     });
   }
 
+  registro(datos: any): Observable<any> {
+    return this.http.post(`${this.apiUrl}/usuarios/registro`, datos);
+  }
+
   logout(): void {
     localStorage.removeItem('token');
   }

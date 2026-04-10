@@ -1,0 +1,72 @@
+<div class="vehiculos-container">
+  <nav class="navbar">
+    <h1 class="navbar-title">AutoFix</h1>
+    <span class="navbar-subtitle">Mis Vehículos</span>
+    <a routerLink="/dashboard" class="btn-nav">Volver al Dashboard</a>
+  </nav>
+
+  <div class="content">
+    <div class="success-message" *ngIf="exito">{{ exito }}</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+
+    <!-- Botón agregar -->
+    <div class="header-actions">
+      <button class="btn-primary" (click)="mostrarFormulario = !mostrarFormulario">
+        {{ mostrarFormulario ? 'Cancelar' : '+ Agregar Vehículo' }}
+      </button>
+    </div>
+
+    <!-- Formulario nuevo vehículo -->
+    <div class="card" *ngIf="mostrarFormulario">
+      <h2>Registrar Nuevo Vehículo</h2>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Marca</label>
+          <input type="text" [(ngModel)]="nuevoVehiculo.marca" placeholder="Toyota" />
+        </div>
+        <div class="form-group">
+          <label>Modelo</label>
+          <input type="text" [(ngModel)]="nuevoVehiculo.modelo" placeholder="Tacoma" />
+        </div>
+        <div class="form-group">
+          <label>Año</label>
+          <input type="number" [(ngModel)]="nuevoVehiculo.anio" placeholder="2020" />
+        </div>
+        <div class="form-group">
+          <label>Placa</label>
+          <input type="text" [(ngModel)]="nuevoVehiculo.placa" placeholder="3456HEB" />
+        </div>
+        <div class="form-group">
+          <label>Color</label>
+          <input type="text" [(ngModel)]="nuevoVehiculo.color" placeholder="Rojo" />
+        </div>
+      </div>
+      <button class="btn-primary" (click)="agregarVehiculo()" [disabled]="cargando">
+        {{ cargando ? 'Guardando...' : 'Guardar Vehículo' }}
+      </button>
+    </div>
+
+    <!-- Lista de vehículos -->
+    <div class="card">
+      <h2>Mis Vehículos</h2>
+      <div *ngIf="vehiculos.length === 0" class="empty-state">
+        No tienes vehículos registrados aún.
+      </div>
+      <div class="vehiculos-grid">
+        <div class="vehiculo-card" *ngFor="let vehiculo of vehiculos">
+          <div class="vehiculo-icon">🚗</div>
+          <div class="vehiculo-info">
+            <h3>{{ vehiculo.marca }} {{ vehiculo.modelo }}</h3>
+            <p>Año: {{ vehiculo.anio }}</p>
+            <p>Placa: <strong>{{ vehiculo.placa }}</strong></p>
+            <p>Color: {{ vehiculo.color }}</p>
+          </div>
+          <button class="btn-eliminar" (click)="eliminarVehiculo(vehiculo.id)">
+            <span class="material-icons">delete</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

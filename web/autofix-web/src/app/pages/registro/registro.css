@@ -1,52 +1,59 @@
-.login-container {
+.registro-container {
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
   background-color: #f0f4f8;
+  padding: 24px;
 }
 
-.login-card {
+.registro-card {
   background: white;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
-  max-width: 420px;
+  max-width: 500px;
   overflow: hidden;
 }
 
-.login-header {
+.registro-header {
   background-color: #e63946;
   color: white;
   padding: 32px;
   text-align: center;
 }
 
-.login-header h1 {
+.registro-header h1 {
   font-size: 2.5rem;
   font-weight: 800;
   margin: 0;
   letter-spacing: 2px;
 }
 
-.login-header p {
+.registro-header p {
   margin: 8px 0 0;
   font-size: 0.9rem;
   opacity: 0.9;
 }
 
-.login-form {
+.registro-form {
   padding: 32px;
 }
 
-.login-form h2 {
+.registro-form h2 {
   margin: 0 0 24px;
   font-size: 1.3rem;
   color: #333;
 }
 
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 16px;
 }
 
 .form-group label {
@@ -114,22 +121,17 @@
   text-align: center;
 }
 
-.olvidaste {
-  text-align: right;
-  margin-bottom: 20px;
+.success-message {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 16px;
+  text-align: center;
 }
 
-.olvidaste a {
-  font-size: 0.85rem;
-  color: #e63946;
-  text-decoration: none;
-}
-
-.olvidaste a:hover {
-  text-decoration: underline;
-}
-
-.btn-login {
+.btn-registro {
   width: 100%;
   padding: 14px;
   background-color: #e63946;
@@ -140,30 +142,30 @@
   font-weight: 600;
   cursor: pointer;
   transition: background-color 0.2s;
+  margin-bottom: 16px;
 }
 
-.btn-login:hover {
+.btn-registro:hover {
   background-color: #c1121f;
 }
 
-.btn-login:disabled {
+.btn-registro:disabled {
   background-color: #ccc;
   cursor: not-allowed;
 }
 
-.registro-link {
+.login-link {
   text-align: center;
-  margin-top: 16px;
   font-size: 0.9rem;
   color: #666;
 }
 
-.registro-link a {
+.login-link a {
   color: #e63946;
   text-decoration: none;
   font-weight: 600;
 }
 
-.registro-link a:hover {
+.login-link a:hover {
   text-decoration: underline;
 }
