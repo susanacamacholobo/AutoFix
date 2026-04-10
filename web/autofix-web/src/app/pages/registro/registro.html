@@ -3,69 +3,136 @@
 
     <div class="registro-header">
       <h1>AutoFix</h1>
-      <p>Crear cuenta de conductor</p>
+      <p>{{ paso === 1 ? '¿Cómo quieres usar AutoFix?' : paso === 2 ? 'Datos personales' : 'Tu vehículo' }}</p>
     </div>
 
     <div class="registro-form">
-      <h2>Registro</h2>
 
-      <div class="form-row">
-        <div class="form-group">
-          <label>Nombre</label>
-          <input type="text" [(ngModel)]="datos.nombre" placeholder="Tu nombre" />
+      <!-- PASO 1: Selección de tipo -->
+      <div *ngIf="paso === 1">
+        <h2>Crear cuenta</h2>
+        <p class="subtitulo">Selecciona cómo vas a usar la plataforma</p>
+        <div class="tipo-grid">
+          <div class="tipo-card" (click)="seleccionarTipo('conductor')">
+            <span class="tipo-icon">🚗</span>
+            <h3>Soy Conductor</h3>
+            <p>Necesito asistencia mecánica en emergencias</p>
+          </div>
+          <div class="tipo-card tipo-disabled">
+            <span class="tipo-icon">🔧</span>
+            <h3>Tengo un Taller</h3>
+            <p>Quiero ofrecer servicios de asistencia</p>
+            <span class="proximamente">Próximamente</span>
+          </div>
         </div>
-        <div class="form-group">
-          <label>Apellido</label>
-          <input type="text" [(ngModel)]="datos.apellido" placeholder="Tu apellido" />
+        <div class="login-link">
+          ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Email</label>
-        <input type="email" [(ngModel)]="datos.email" placeholder="tucorreo@gmail.com" />
-      </div>
+      <!-- PASO 2: Datos del conductor -->
+      <div *ngIf="paso === 2">
+        <div class="paso-header">
+          <button class="btn-volver" (click)="paso = 1">← Volver</button>
+          <span class="paso-indicator">Paso 1 de 2</span>
+        </div>
+        <h2>Tus datos personales</h2>
 
-      <div class="form-group">
-        <label>Teléfono</label>
-        <input type="tel" [(ngModel)]="datos.telefono" placeholder="78901234" />
-      </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Nombre *</label>
+            <input type="text" [(ngModel)]="conductor.nombre" placeholder="Tu nombre" />
+          </div>
+          <div class="form-group">
+            <label>Apellido *</label>
+            <input type="text" [(ngModel)]="conductor.apellido" placeholder="Tu apellido" />
+          </div>
+        </div>
 
-      <div class="form-group">
-        <label>Contraseña</label>
-        <div class="input-password">
+        <div class="form-group">
+          <label>Email *</label>
+          <input type="email" [(ngModel)]="conductor.email" placeholder="tucorreo@gmail.com" />
+        </div>
+
+        <div class="form-group">
+          <label>Teléfono</label>
+          <input type="text" [(ngModel)]="conductor.telefono" placeholder="78901234" autocomplete="off" />
+        </div>
+
+        <div class="form-group">
+          <label>Contraseña *</label>
+          <div class="input-password">
+            <input
+              [type]="mostrarContrasena ? 'text' : 'password'"
+              [(ngModel)]="conductor.contrasena"
+              placeholder="••••••••"
+            />
+            <button class="btn-ojo" (click)="toggleContrasena()" type="button">
+              <span class="material-icons">
+                {{ mostrarContrasena ? 'visibility' : 'visibility_off' }}
+              </span>
+            </button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Confirmar Contraseña *</label>
           <input
             [type]="mostrarContrasena ? 'text' : 'password'"
-            [(ngModel)]="datos.contrasena"
-            placeholder="••••••••"
-          />
-          <button class="btn-ojo" (click)="toggleContrasena()" type="button">
-            <span class="material-icons">
-              {{ mostrarContrasena ? 'visibility' : 'visibility_off' }}
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label>Confirmar Contraseña</label>
-        <div class="input-password">
-          <input
-            [type]="mostrarContrasena ? 'text' : 'password'"
-            [(ngModel)]="datos.confirmar_contrasena"
+            [(ngModel)]="conductor.confirmar_contrasena"
             placeholder="••••••••"
           />
         </div>
+
+        <div class="error-message" *ngIf="error">{{ error }}</div>
+
+        <button class="btn-registro" (click)="siguientePaso()">
+          Siguiente → Registrar Vehículo
+        </button>
       </div>
 
-      <div class="error-message" *ngIf="error">{{ error }}</div>
-      <div class="success-message" *ngIf="exito">{{ exito }}</div>
+      <!-- PASO 3: Datos del vehículo -->
+      <div *ngIf="paso === 3">
+        <div class="paso-header">
+          <button class="btn-volver" (click)="paso = 2">← Volver</button>
+          <span class="paso-indicator">Paso 2 de 2</span>
+        </div>
+        <h2>Tu vehículo</h2>
+        <p class="subtitulo">Agrega al menos un vehículo para continuar</p>
 
-      <button (click)="registrarse()" [disabled]="cargando" class="btn-registro">
-        {{ cargando ? 'Creando cuenta...' : 'Crear Cuenta' }}
-      </button>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Marca *</label>
+            <input type="text" [(ngModel)]="vehiculo.marca" placeholder="Toyota" />
+          </div>
+          <div class="form-group">
+            <label>Modelo *</label>
+            <input type="text" [(ngModel)]="vehiculo.modelo" placeholder="Tacoma" />
+          </div>
+        </div>
 
-      <div class="login-link">
-        ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión</a>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Año</label>
+            <input type="number" [(ngModel)]="vehiculo.anio" placeholder="2020" />
+          </div>
+          <div class="form-group">
+            <label>Placa *</label>
+            <input type="text" [(ngModel)]="vehiculo.placa" placeholder="3456HEB" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Color</label>
+          <input type="text" [(ngModel)]="vehiculo.color" placeholder="Rojo" />
+        </div>
+
+        <div class="error-message" *ngIf="error">{{ error }}</div>
+        <div class="success-message" *ngIf="exito">{{ exito }}</div>
+
+        <button class="btn-registro" (click)="registrarse()" [disabled]="cargando">
+          {{ cargando ? 'Creando cuenta...' : 'Crear Cuenta' }}
+        </button>
       </div>
 
     </div>

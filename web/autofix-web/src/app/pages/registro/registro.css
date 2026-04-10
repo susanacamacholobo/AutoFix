@@ -41,9 +41,97 @@
 }
 
 .registro-form h2 {
-  margin: 0 0 24px;
+  margin: 0 0 8px;
   font-size: 1.3rem;
   color: #333;
+}
+
+.subtitulo {
+  color: #888;
+  font-size: 0.9rem;
+  margin: 0 0 24px;
+}
+
+.tipo-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.tipo-card {
+  border: 2px solid #eee;
+  border-radius: 12px;
+  padding: 24px 16px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+}
+
+.tipo-card:hover {
+  border-color: #e63946;
+  background-color: #fff0f0;
+}
+
+.tipo-card.tipo-disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.tipo-card.tipo-disabled:hover {
+  border-color: #eee;
+  background-color: white;
+}
+
+.tipo-icon {
+  font-size: 2.5rem;
+  display: block;
+  margin-bottom: 8px;
+}
+
+.tipo-card h3 {
+  margin: 0 0 8px;
+  font-size: 1rem;
+  color: #333;
+}
+
+.tipo-card p {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #888;
+}
+
+.proximamente {
+  display: inline-block;
+  margin-top: 8px;
+  background-color: #f0f0f0;
+  color: #888;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+}
+
+.paso-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.btn-volver {
+  background: none;
+  border: none;
+  color: #e63946;
+  font-size: 0.9rem;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 0;
+}
+
+.paso-indicator {
+  font-size: 0.85rem;
+  color: #888;
 }
 
 .form-row {

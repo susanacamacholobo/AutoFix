@@ -29,7 +29,11 @@ def login(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depend
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Usuario inactivo"
         )
-    token = crear_token({"sub": usuario.email, "rol": "usuario"})
+    token = crear_token({
+        "sub": usuario.email,
+        "rol": usuario.rol.nombre if usuario.rol else "conductor",
+        "id": usuario.id
+    })
     return {"access_token": token, "token_type": "bearer"}
 
 @router.post("/logout")

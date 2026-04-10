@@ -2,8 +2,12 @@
   <nav class="navbar">
     <h1 class="navbar-title">AutoFix</h1>
     <div class="navbar-links">
-      <a routerLink="/mis-vehiculos" class="btn-nav">Mis Vehículos</a>
-      <a routerLink="/roles" class="btn-nav">Gestionar Roles</a>
+      <a routerLink="/mis-vehiculos" class="btn-nav" *ngIf="rol.toLowerCase() === 'conductor' || rol.toLowerCase() === 'administrador'">
+        Mis Vehículos
+      </a>
+      <a routerLink="/roles" class="btn-nav" *ngIf="rol.toLowerCase() === 'administrador'">
+        Gestionar Roles
+      </a>
       <button class="btn-logout" (click)="cerrarSesion()">
         <span class="material-icons">logout</span>
         Cerrar Sesión
@@ -13,6 +17,8 @@
 
   <div class="content">
     <h2>Bienvenido a AutoFix!</h2>
-    <p>Plataforma de Emergencias Vehiculares</p>
+    <p *ngIf="rol.toLowerCase() === 'conductor'">Reporta emergencias vehiculares desde aquí.</p>
+    <p *ngIf="rol.toLowerCase() === 'administrador'">Panel de administración del sistema.</p>
+    <p *ngIf="rol.toLowerCase() === 'taller'">Gestiona las solicitudes de asistencia.</p>
   </div>
 </div>
