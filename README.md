@@ -131,6 +131,17 @@ Script completo disponible en: `database/autofix_db.sql`
 
 ---
 
+## Links de Producción
+
+| Plataforma | URL |
+|-----------|-----|
+| 🌐 Frontend Web | https://autofix-web.vercel.app |
+| ⚙️ Backend API | https://autofix-production-0c6c.up.railway.app |
+| 📚 Documentación API | https://autofix-production-0c6c.up.railway.app/docs |
+| 📱 App Móvil (APK) | https://github.com/susanacamacholobo/AutoFix/releases/download/v1.0/app-release.apk |
+
+---
+
 ## Instalación y configuración
 
 ### Requisitos previos
