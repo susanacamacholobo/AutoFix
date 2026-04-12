@@ -71,7 +71,7 @@ class _RegistroScreenState extends State<RegistroScreen> {
     try {
       // Registrar usuario
       final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/usuarios/registro'),
+        Uri.parse('https://autofix-production-0c6c.up.railway.app/usuarios/registro'),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
           'nombre': _nombreController.text,

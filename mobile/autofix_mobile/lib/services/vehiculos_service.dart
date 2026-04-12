@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class VehiculosService {
-  final String baseUrl = 'http://10.0.2.2:8000';
+  final String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
 
   Future<List<dynamic>> listarMisVehiculos(String token) async {
     final response = await http.get(
