@@ -12,6 +12,7 @@ class DashboardScreen extends StatefulWidget {
 class _DashboardScreenState extends State<DashboardScreen> {
   String _rol = '';
   String _email = '';
+  String _nombre = '';
 
   @override
   void initState() {
@@ -27,6 +28,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       setState(() {
         _rol = (data['rol'] ?? '').toString().toLowerCase();
         _email = data['sub'] ?? '';
+        _nombre = data['nombre'] ?? _email;
       });
     } catch (e) {
       _rol = '';
@@ -71,22 +73,129 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('🚗', style: TextStyle(fontSize: 64)),
-            const SizedBox(height: 16),
-            const Text('Bienvenido a AutoFix!', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            if (_rol == 'conductor')
-              const Text('Reporta emergencias vehiculares desde aquí.', style: TextStyle(color: Colors.grey)),
-            if (_rol == 'administrador')
-              const Text('Panel de administración del sistema.', style: TextStyle(color: Colors.grey)),
-            if (_rol == 'taller')
-              const Text('Gestiona las solicitudes de asistencia.', style: TextStyle(color: Colors.grey)),
-          ],
-        ),
+      body: _rol == 'conductor'
+          ? _buildConductorDashboard()
+          : _buildDefaultDashboard(),
+    );
+  }
+
+  Widget _buildConductorDashboard() {
+    return Padding(
+      padding: const EdgeInsets.all(24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('¡Hola, $_nombre!', style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 4),
+          Text(_email, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          const SizedBox(height: 32),
+
+          // Botón de emergencia
+          GestureDetector(
+            onTap: () => Navigator.pushNamed(context, '/reportar-emergencia', arguments: widget.token),
+            child: Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: const Color(0xFFE63946),
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFFE63946).withOpacity(0.4),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  )
+                ],
+              ),
+              child: const Column(
+                children: [
+                  Text('🚨', style: TextStyle(fontSize: 48)),
+                  SizedBox(height: 12),
+                  Text('REPORTAR EMERGENCIA',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 20,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 1,
+                      )),
+                  SizedBox(height: 4),
+                  Text('Toca aquí si necesitas ayuda mecánica',
+                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                ],
+              ),
+            ),
+          ),
+
+          const SizedBox(height: 24),
+
+          // Botones secundarios
+          Row(
+            children: [
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                    ),
+                    child: const Column(
+                      children: [
+                        Text('🚗', style: TextStyle(fontSize: 28)),
+                        SizedBox(height: 8),
+                        Text('Mis Vehículos', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: GestureDetector(
+                  onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
+                  child: Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                    ),
+                    child: const Column(
+                      children: [
+                        Text('📋', style: TextStyle(fontSize: 28)),
+                        SizedBox(height: 8),
+                        Text('Mis Emergencias', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildDefaultDashboard() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Text('🔧', style: TextStyle(fontSize: 64)),
+          const SizedBox(height: 16),
+          const Text('Bienvenido a AutoFix!',
+              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          if (_rol == 'taller')
+            const Text('Gestiona las solicitudes de asistencia.',
+                style: TextStyle(color: Colors.grey)),
+          if (_rol == 'administrador')
+            const Text('Panel de administración del sistema.',
+                style: TextStyle(color: Colors.grey)),
+        ],
       ),
     );
   }

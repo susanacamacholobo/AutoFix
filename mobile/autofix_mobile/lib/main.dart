@@ -7,6 +7,8 @@ import 'screens/registro_screen.dart';
 import 'screens/registro_taller_screen.dart';
 import 'screens/mis_vehiculos_screen.dart';
 import 'screens/mis_tecnicos_screen.dart';
+import 'screens/reportar_emergencia_screen.dart';
+import 'screens/mis_incidentes_screen.dart';
 
 void main() {
   runApp(const AutoFixApp());
@@ -61,6 +63,18 @@ class AutoFixApp extends StatelessWidget {
           final token = settings.arguments as String;
           return MaterialPageRoute(
             builder: (context) => MisTecnicosScreen(token: token),
+          );
+        }
+        if (settings.name == '/reportar-emergencia') {
+          final token = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => ReportarEmergenciaScreen(token: token),
+          );
+        }
+        if (settings.name == '/mis-incidentes') {
+          final token = settings.arguments as String;
+          return MaterialPageRoute(
+            builder: (context) => MisIncidentesScreen(token: token),
           );
         }
         return null;
