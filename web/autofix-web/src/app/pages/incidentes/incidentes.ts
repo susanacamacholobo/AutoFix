@@ -54,7 +54,10 @@ export class IncidentesComponent implements OnInit {
   cargarIncidentes(): void {
     this.incidentesService.listarTodos().subscribe({
       next: (incidentes) => {
-        this.incidentes = incidentes;
+        this.incidentes = incidentes.filter((i: any) => 
+          i.estado === 'pendiente' || 
+          i.taller_id === this.tallerId
+        );
         this.cdr.detectChanges();
       },
       error: () => this.error = 'Error al cargar incidentes'

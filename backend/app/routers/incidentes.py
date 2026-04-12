@@ -5,6 +5,7 @@ from app.schemas.incidente import IncidenteCreate, IncidenteUpdate, IncidenteRes
 from app.services import incidente_service
 from app.core.dependencies import get_current_user
 from app.models.usuario import Usuario
+from app.services import taller_service
 from typing import List
 
 router = APIRouter(
@@ -59,7 +60,13 @@ def actualizar_incidente(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    db_incidente = incidente_service.actualizar_incidente(db, id, datos)
+    # Obtener taller_id del usuario actual si es taller
+    taller_id = None
+    taller = taller_service.get_taller_por_email(db, current_user.email)
+    if taller:
+        taller_id = taller.id
+
+    db_incidente = incidente_service.actualizar_incidente(db, id, datos, taller_id)
     if not db_incidente:
         raise HTTPException(status_code=404, detail="Incidente no encontrado")
     return db_incidente
