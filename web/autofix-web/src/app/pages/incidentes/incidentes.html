@@ -11,39 +11,62 @@
 
     <!-- Filtros -->
     <div class="filtros">
-      <button [class.active]="filtro === 'pendiente'" (click)="filtro = 'pendiente'">Pendientes</button>
-      <button [class.active]="filtro === 'en_proceso'" (click)="filtro = 'en_proceso'">En Proceso</button>
-      <button [class.active]="filtro === 'atendido'" (click)="filtro = 'atendido'">Atendidos</button>
-      <button [class.active]="filtro === 'rechazado'" (click)="filtro = 'rechazado'">Rechazados</button>
-      <button [class.active]="filtro === 'todos'" (click)="filtro = 'todos'">Todos</button>
+      <button [class.active]="filtro === 'pendiente'" (click)="cambiarFiltro('pendiente')">Pendientes</button>
+      <button [class.active]="filtro === 'en_proceso'" (click)="cambiarFiltro('en_proceso')">En Proceso</button>
+      <button [class.active]="filtro === 'atendido'" (click)="cambiarFiltro('atendido')">Atendidos</button>
+      <button [class.active]="filtro === 'rechazado'" (click)="cambiarFiltro('rechazado')">Mis Rechazos</button>
+      <button [class.active]="filtro === 'todos'" (click)="cambiarFiltro('todos')">Todos</button>
     </div>
 
     <div class="layout">
       <!-- Lista de incidentes -->
       <div class="lista-panel">
-        <div *ngIf="incidentesFiltrados.length === 0" class="empty-state">
-          No hay emergencias {{ filtro === 'todos' ? '' : filtro + 's' }}.
-        </div>
-        <div class="incidente-card"
-          *ngFor="let incidente of incidentesFiltrados"
-          [class.selected]="incidenteSeleccionado?.id === incidente.id"
-          (click)="seleccionarIncidente(incidente)">
-          <div class="incidente-header">
-            <span class="tipo">{{ incidente.tipo || 'Sin clasificar' }}</span>
-            <span class="badge" [ngClass]="getBadgeClass(incidente.estado)">
-              {{ incidente.estado }}
-            </span>
+
+        <!-- Incidentes normales -->
+        <ng-container *ngIf="filtro !== 'rechazado'">
+          <div *ngIf="incidentesFiltrados.length === 0" class="empty-state">
+            No hay emergencias {{ filtro === 'todos' ? '' : filtro + 's' }}.
           </div>
-          <div class="incidente-body">
-            <p class="descripcion">{{ incidente.descripcion || 'Sin descripción' }}</p>
-            <div class="incidente-meta">
-              <span class="prioridad" [ngClass]="getPrioridadClass(incidente.prioridad)">
-                ● {{ incidente.prioridad }}
+          <div class="incidente-card" *ngFor="let incidente of incidentesFiltrados"
+            [class.selected]="incidenteSeleccionado?.id === incidente.id" (click)="seleccionarIncidente(incidente)">
+            <div class="incidente-header">
+              <span class="tipo">{{ incidente.tipo || 'Sin clasificar' }}</span>
+              <span class="badge" [ngClass]="getBadgeClass(incidente.estado)">
+                {{ incidente.estado }}
               </span>
-              <span class="fecha">{{ incidente.fecha_creacion | date:'dd/MM HH:mm' }}</span>
+            </div>
+            <div class="incidente-body">
+              <p class="descripcion">{{ incidente.descripcion || 'Sin descripción' }}</p>
+              <div class="incidente-meta">
+                <span class="prioridad" [ngClass]="getPrioridadClass(incidente.prioridad)">
+                  ● {{ incidente.prioridad }}
+                </span>
+                <span class="fecha">{{ incidente.fecha_creacion | date:'dd/MM HH:mm' }}</span>
+              </div>
             </div>
           </div>
-        </div>
+        </ng-container>
+
+        <!-- Mis Rechazos -->
+        <ng-container *ngIf="filtro === 'rechazado'">
+          <div *ngIf="rechazos.length === 0" class="empty-state">
+            No has rechazado ninguna solicitud.
+          </div>
+          <div class="incidente-card rechazo-card" *ngFor="let rechazo of rechazos">
+            <div class="incidente-header">
+              <span class="tipo">{{ rechazo.tipo || 'Sin clasificar' }}</span>
+              <span class="badge badge-danger">rechazado</span>
+            </div>
+            <div class="incidente-body">
+              <p class="descripcion">{{ rechazo.descripcion || 'Sin descripción' }}</p>
+              <div class="incidente-meta">
+                <span class="fecha">{{ rechazo.fecha_rechazo | date:'dd/MM HH:mm' }}</span>
+                <span class="estado-actual">Estado actual: {{ rechazo.estado_actual }}</span>
+              </div>
+            </div>
+          </div>
+        </ng-container>
+
       </div>
 
       <!-- Detalle del incidente -->
@@ -83,12 +106,20 @@
             </div>
           </div>
 
+          <!-- Fotos del incidente -->
+          <div class="fotos-section" *ngIf="evidencias.length > 0">
+            <h3>Fotos enviadas</h3>
+            <div class="fotos-grid">
+              <img *ngFor="let evidencia of evidencias" [src]="'http://127.0.0.1:8000' + evidencia.url"
+                class="foto-evidencia" (click)="abrirFoto('http://127.0.0.1:8000' + evidencia.url)" />
+            </div>
+          </div>
+
           <!-- Asignar técnico -->
           <div class="asignar-tecnico" *ngIf="incidenteSeleccionado.estado === 'en_proceso' && tecnicos.length > 0">
             <h3>Asignar Técnico</h3>
             <div class="tecnicos-list">
-              <button class="btn-tecnico"
-                *ngFor="let tecnico of tecnicos"
+              <button class="btn-tecnico" *ngFor="let tecnico of tecnicos"
                 (click)="asignarTecnico(incidenteSeleccionado, tecnico.id)"
                 [class.selected]="incidenteSeleccionado.tecnico_id === tecnico.id">
                 👨‍🔧 {{ tecnico.nombre }} {{ tecnico.apellido }}

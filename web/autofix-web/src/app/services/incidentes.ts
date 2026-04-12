@@ -52,4 +52,16 @@ export class IncidentesService {
       headers: this.getHeaders()
     });
   }
+
+  listarEvidencias(incidenteId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/evidencias/${incidenteId}`, {
+      headers: this.getHeaders()
+    });
+  }
+
+  historialRechazos(tallerId: number): Observable<any[]> {
+    return this.http.get<any[]>(`${this.apiUrl}/incidentes/historial-rechazos/${tallerId}`, {
+      headers: this.getHeaders()
+    });
+  }
 }

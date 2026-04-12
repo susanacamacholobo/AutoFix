@@ -315,3 +315,42 @@
   border-radius: 8px;
   margin-bottom: 16px;
 }
+
+.fotos-section {
+  margin-bottom: 20px;
+}
+
+.fotos-section h3 {
+  font-size: 1rem;
+  color: #333;
+  margin: 0 0 12px;
+}
+
+.fotos-grid {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.foto-evidencia {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.foto-evidencia:hover {
+  transform: scale(1.05);
+}
+
+.rechazo-card {
+  border-left: 4px solid #e63946;
+}
+
+.estado-actual {
+  font-size: 0.75rem;
+  color: #888;
+  font-style: italic;
+}

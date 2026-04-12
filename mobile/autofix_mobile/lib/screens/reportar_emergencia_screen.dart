@@ -129,7 +129,8 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
           ? _descripcionController.text
           : tipoData['descripcion'];
 
-      await _incidenteService.crearIncidente(widget.token, {
+      // Crear incidente
+      final incidente = await _incidenteService.crearIncidente(widget.token, {
         'usuario_id': _usuarioId,
         'vehiculo_id': _vehiculoSeleccionado,
         'tipo': _tipoSeleccionado,
@@ -137,6 +138,11 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
         'latitud': _latitud,
         'longitud': _longitud,
       });
+
+      // Subir fotos
+      for (final foto in _fotos) {
+        await _incidenteService.subirFoto(widget.token, incidente['id'], File(foto.path));
+      }
 
       setState(() => _cargando = false);
 

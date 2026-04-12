@@ -22,6 +22,8 @@ export class IncidentesComponent implements OnInit {
   error: string = '';
   exito: string = '';
   filtro: string = 'pendiente';
+  evidencias: any[] = [];
+  rechazos: any[] = [];
 
   constructor(
     private incidentesService: IncidentesService,
@@ -46,6 +48,7 @@ export class IncidentesComponent implements OnInit {
           error: () => {}
         });
         this.cargarIncidentes();
+        this.cargarRechazos();
       },
       error: () => this.cargarIncidentes()
     });
@@ -71,6 +74,14 @@ export class IncidentesComponent implements OnInit {
 
   seleccionarIncidente(incidente: any): void {
     this.incidenteSeleccionado = incidente;
+    this.evidencias = [];
+    this.incidentesService.listarEvidencias(incidente.id).subscribe({
+      next: (evidencias) => {
+        this.evidencias = evidencias;
+        this.cdr.detectChanges();
+      },
+      error: () => {}
+    });
   }
 
   aceptarIncidente(incidente: any): void {
@@ -144,5 +155,26 @@ export class IncidentesComponent implements OnInit {
       case 'baja': return 'prioridad-baja';
       default: return 'prioridad-media';
     }
+  }
+
+  abrirFoto(url: string): void {
+    window.open(url, '_blank');
+  }
+
+  cargarRechazos(): void {
+    if (this.tallerId === 0) return;
+    this.incidentesService.historialRechazos(this.tallerId).subscribe({
+      next: (rechazos) => {
+        this.rechazos = rechazos;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+      }
+    });
+  }
+
+  cambiarFiltro(filtro: string): void {
+    this.filtro = filtro;
+    this.cdr.detectChanges();
   }
 }

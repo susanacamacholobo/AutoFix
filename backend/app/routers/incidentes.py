@@ -5,6 +5,7 @@ from app.schemas.incidente import IncidenteCreate, IncidenteUpdate, IncidenteRes
 from app.services import incidente_service
 from app.core.dependencies import get_current_user
 from app.models.usuario import Usuario
+from app.models.historial import Historial
 from app.services import taller_service
 from typing import List
 
@@ -42,6 +43,31 @@ def listar_mis_incidentes(
 ):
     return incidente_service.get_incidentes_por_usuario(db, current_user.id)
 
+@router.get("/historial-rechazos/{taller_id}")
+def historial_rechazos(
+    taller_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    rechazos = db.query(Historial).filter(
+        Historial.taller_id == taller_id,
+        Historial.estado_nuevo == 'rechazado'
+    ).all()
+
+    resultado = []
+    for rechazo in rechazos:
+        incidente = incidente_service.get_incidente_por_id(db, rechazo.incidente_id)
+        if incidente:
+            resultado.append({
+                'historial_id': rechazo.id,
+                'incidente_id': rechazo.incidente_id,
+                'tipo': incidente.tipo,
+                'descripcion': incidente.descripcion,
+                'fecha_rechazo': rechazo.fecha,
+                'estado_actual': incidente.estado
+            })
+    return resultado
+
 @router.get("/{id}", response_model=IncidenteResponse)
 def obtener_incidente(
     id: int,
@@ -60,7 +86,6 @@ def actualizar_incidente(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    # Obtener taller_id del usuario actual si es taller
     taller_id = None
     taller = taller_service.get_taller_por_email(db, current_user.email)
     if taller:

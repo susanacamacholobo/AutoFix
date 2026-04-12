@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:http/http.dart' as http;
 
 class IncidenteService {
@@ -32,6 +33,32 @@ class IncidenteService {
       return jsonDecode(response.body);
     } else {
       throw Exception('Error al crear incidente');
+    }
+  }
+
+  Future<void> subirFoto(String token, int incidenteId, File foto) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/evidencias/subir/$incidenteId'),
+    );
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['tipo'] = 'imagen';
+    request.files.add(await http.MultipartFile.fromPath('archivo', foto.path));
+    await request.send();
+  }
+
+  Future<List<dynamic>> listarEvidencias(String token, int incidenteId) async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/evidencias/$incidenteId'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    );
+    if (response.statusCode == 200) {
+      return jsonDecode(response.body);
+    } else {
+      throw Exception('Error al cargar evidencias');
     }
   }
 }
