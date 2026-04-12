@@ -43,3 +43,6 @@ mobile/.flutter-plugins-dependencies
 backend/.env
 backend/app/__pycache__/
 backend/app/db/__pycache__/
+
+# Uploads
+backend/uploads/
