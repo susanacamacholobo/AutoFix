@@ -7,6 +7,7 @@ import { RegistroComponent } from './pages/registro/registro';
 import { RegistroTallerComponent } from './pages/registro-taller/registro-taller';
 import { MisVehiculosComponent } from './pages/mis-vehiculos/mis-vehiculos';
 import { MisTecnicosComponent } from './pages/mis-tecnicos/mis-tecnicos';
+import { IncidentesComponent } from './pages/incidentes/incidentes';
 import { AuthGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
@@ -40,6 +41,12 @@ export const routes: Routes = [
   {
     path: 'mis-tecnicos',
     component: MisTecnicosComponent,
+    canActivate: [AuthGuard],
+    data: { roles: ['taller', 'administrador'] }
+  },
+  {
+    path: 'incidentes',
+    component: IncidentesComponent,
     canActivate: [AuthGuard],
     data: { roles: ['taller', 'administrador'] }
   },

@@ -1,0 +1,124 @@
+<div class="incidentes-container">
+  <nav class="navbar">
+    <h1 class="navbar-title">AutoFix</h1>
+    <span class="navbar-subtitle">Gestión de Emergencias</span>
+    <a routerLink="/dashboard" class="btn-nav">Volver al Dashboard</a>
+  </nav>
+
+  <div class="content">
+    <div class="success-message" *ngIf="exito">{{ exito }}</div>
+    <div class="error-message" *ngIf="error">{{ error }}</div>
+
+    <!-- Filtros -->
+    <div class="filtros">
+      <button [class.active]="filtro === 'pendiente'" (click)="filtro = 'pendiente'">Pendientes</button>
+      <button [class.active]="filtro === 'en_proceso'" (click)="filtro = 'en_proceso'">En Proceso</button>
+      <button [class.active]="filtro === 'atendido'" (click)="filtro = 'atendido'">Atendidos</button>
+      <button [class.active]="filtro === 'rechazado'" (click)="filtro = 'rechazado'">Rechazados</button>
+      <button [class.active]="filtro === 'todos'" (click)="filtro = 'todos'">Todos</button>
+    </div>
+
+    <div class="layout">
+      <!-- Lista de incidentes -->
+      <div class="lista-panel">
+        <div *ngIf="incidentesFiltrados.length === 0" class="empty-state">
+          No hay emergencias {{ filtro === 'todos' ? '' : filtro + 's' }}.
+        </div>
+        <div class="incidente-card"
+          *ngFor="let incidente of incidentesFiltrados"
+          [class.selected]="incidenteSeleccionado?.id === incidente.id"
+          (click)="seleccionarIncidente(incidente)">
+          <div class="incidente-header">
+            <span class="tipo">{{ incidente.tipo || 'Sin clasificar' }}</span>
+            <span class="badge" [ngClass]="getBadgeClass(incidente.estado)">
+              {{ incidente.estado }}
+            </span>
+          </div>
+          <div class="incidente-body">
+            <p class="descripcion">{{ incidente.descripcion || 'Sin descripción' }}</p>
+            <div class="incidente-meta">
+              <span class="prioridad" [ngClass]="getPrioridadClass(incidente.prioridad)">
+                ● {{ incidente.prioridad }}
+              </span>
+              <span class="fecha">{{ incidente.fecha_creacion | date:'dd/MM HH:mm' }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Detalle del incidente -->
+      <div class="detalle-panel" *ngIf="incidenteSeleccionado">
+        <div class="detalle-card">
+          <h2>Detalle de Emergencia #{{ incidenteSeleccionado.id }}</h2>
+
+          <div class="detalle-info">
+            <div class="info-row">
+              <span class="label">Tipo:</span>
+              <span>{{ incidenteSeleccionado.tipo || 'Sin clasificar' }}</span>
+            </div>
+            <div class="info-row">
+              <span class="label">Estado:</span>
+              <span class="badge" [ngClass]="getBadgeClass(incidenteSeleccionado.estado)">
+                {{ incidenteSeleccionado.estado }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">Prioridad:</span>
+              <span class="prioridad" [ngClass]="getPrioridadClass(incidenteSeleccionado.prioridad)">
+                {{ incidenteSeleccionado.prioridad }}
+              </span>
+            </div>
+            <div class="info-row">
+              <span class="label">Descripción:</span>
+              <span>{{ incidenteSeleccionado.descripcion || 'Sin descripción' }}</span>
+            </div>
+            <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
+              <span class="label">Ubicación:</span>
+              <a [href]="'https://maps.google.com/?q=' + incidenteSeleccionado.latitud + ',' + incidenteSeleccionado.longitud"
+                target="_blank" class="link-mapa">Ver en mapa 🗺️</a>
+            </div>
+            <div class="info-row">
+              <span class="label">Fecha:</span>
+              <span>{{ incidenteSeleccionado.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+          </div>
+
+          <!-- Asignar técnico -->
+          <div class="asignar-tecnico" *ngIf="incidenteSeleccionado.estado === 'en_proceso' && tecnicos.length > 0">
+            <h3>Asignar Técnico</h3>
+            <div class="tecnicos-list">
+              <button class="btn-tecnico"
+                *ngFor="let tecnico of tecnicos"
+                (click)="asignarTecnico(incidenteSeleccionado, tecnico.id)"
+                [class.selected]="incidenteSeleccionado.tecnico_id === tecnico.id">
+                👨‍🔧 {{ tecnico.nombre }} {{ tecnico.apellido }}
+                <small>{{ tecnico.especialidad }}</small>
+              </button>
+            </div>
+          </div>
+
+          <!-- Acciones -->
+          <div class="acciones" *ngIf="incidenteSeleccionado.estado === 'pendiente'">
+            <button class="btn-aceptar" (click)="aceptarIncidente(incidenteSeleccionado)">
+              ✅ Aceptar Solicitud
+            </button>
+            <button class="btn-rechazar" (click)="rechazarIncidente(incidenteSeleccionado)">
+              ❌ Rechazar Solicitud
+            </button>
+          </div>
+
+          <div class="acciones" *ngIf="incidenteSeleccionado.estado === 'en_proceso'">
+            <button class="btn-aceptar" (click)="actualizarEstado(incidenteSeleccionado, 'atendido')">
+              ✅ Marcar como Atendido
+            </button>
+          </div>
+
+        </div>
+      </div>
+
+      <div class="detalle-panel empty-detalle" *ngIf="!incidenteSeleccionado">
+        <p>Selecciona una emergencia para ver los detalles</p>
+      </div>
+    </div>
+  </div>
+</div>

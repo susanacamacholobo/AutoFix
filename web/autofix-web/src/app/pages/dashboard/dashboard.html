@@ -8,6 +8,9 @@
       <a routerLink="/mis-tecnicos" class="btn-nav" *ngIf="rol.toLowerCase() === 'taller' || rol.toLowerCase() === 'administrador'">
         Mis Técnicos
       </a>
+      <a routerLink="/incidentes" class="btn-nav" *ngIf="rol.toLowerCase() === 'taller' || rol.toLowerCase() === 'administrador'">
+        Emergencias
+      </a>
       <a routerLink="/roles" class="btn-nav" *ngIf="rol.toLowerCase() === 'administrador'">
         Gestionar Roles
       </a>
