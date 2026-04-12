@@ -115,6 +115,7 @@ CREATE TABLE evidencias (
 CREATE TABLE historial (
     id SERIAL PRIMARY KEY,
     incidente_id INTEGER REFERENCES incidentes(id),
+    taller_id INTEGER REFERENCES talleres(id),
     estado_anterior VARCHAR(20),
     estado_nuevo VARCHAR(20),
     observacion TEXT,
