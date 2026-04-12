@@ -20,6 +20,7 @@ AutoFix conecta a conductores con problemas mecánicos con talleres y mecánicos
 
 | Actor | Rol |
 |-------|-----|
+| Administrador | Supervisa el funcionamiento general del sistema, gestiona roles y permisos |
 | Cliente | Registra vehículos, reporta emergencias, realiza pagos |
 | Taller | Recibe solicitudes, asigna técnicos, actualiza estados |
 | Técnico | Es asignado por el taller para atender al cliente |
@@ -48,6 +49,8 @@ AutoFix/
 │   └── main.py             # API REST con FastAPI
 ├── mobile/
 │   └── autofix_mobile/     # App móvil para clientes (Flutter)
+├── database/
+│   └── autofix_db.sql      # Script de base de datos PostgreSQL
 └── README.md
 ```
 
@@ -59,16 +62,15 @@ AutoFix/
 - Registro de usuario y vehículos
 
 **Reporte de emergencia**
+- Tipos rápidos: batería, llanta pinchada, grúa, otra emergencia
 - Envío de ubicación en tiempo real
 - Adjuntar fotos del vehículo
-- Enviar audio describiendo el problema
 - Texto adicional opcional
 
 **Seguimiento**
 - Estado de solicitud: Pendiente / En proceso / Atendido
 - Taller asignado y tiempo estimado de llegada
 - Notificaciones push
-- Comunicación con el taller (opcional)
 - Pago desde la app
 
 ---
@@ -82,20 +84,23 @@ AutoFix/
 - Ver solicitudes disponibles con información estructurada
 - Aceptar o rechazar solicitudes
 - Asignar técnico según disponibilidad y tipo de percance
+- Historial de rechazos
 
 **Operación**
 - Actualizar estado del servicio
-- Gestionar disponibilidad
+- Gestionar disponibilidad de técnicos
+- Ver fotos enviadas por el conductor
+- Ver ubicación del conductor en Google Maps
 - Ver historial de atenciones
 
-**Información IA**
+**Información IA** *(próximamente)*
 - Resumen automático del incidente
 - Clasificación del problema
 - Nivel de prioridad
 
 ---
 
-## Módulos de Inteligencia Artificial
+## Módulos de Inteligencia Artificial *(en desarrollo)*
 
 | Módulo | Descripción |
 |--------|-------------|
@@ -106,7 +111,7 @@ AutoFix/
 
 ---
 
-## Sistema de Asignación Inteligente
+## Sistema de Asignación Inteligente *(en desarrollo)*
 
 Considera los siguientes factores para recomendar talleres:
 - Ubicación del incidente
@@ -120,7 +125,9 @@ Considera los siguientes factores para recomendar talleres:
 ## Modelo de Datos (PostgreSQL)
 
 El modelo contempla las siguientes entidades:
-`usuarios` · `talleres` · `técnicos` · `vehículos` · `incidentes` · `evidencias` · `estados` · `historial` · `métricas`
+`usuarios` · `talleres` · `técnicos` · `vehículos` · `incidentes` · `evidencias` · `historial` · `roles` · `permisos`
+
+Script completo disponible en: `database/autofix_db.sql`
 
 ---
 
@@ -130,7 +137,7 @@ El modelo contempla las siguientes entidades:
 - Node.js v18+
 - Python 3.10+
 - Flutter SDK 3.0+
-- PostgreSQL 14+
+- PostgreSQL 17+
 
 ### Frontend Web (Angular)
 ```bash
@@ -146,7 +153,7 @@ cd backend
 python -m venv venv
 venv\Scripts\activate      # Windows
 source venv/bin/activate   # Mac/Linux
-pip install fastapi uvicorn
+pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 Disponible en: `http://localhost:8000`  
