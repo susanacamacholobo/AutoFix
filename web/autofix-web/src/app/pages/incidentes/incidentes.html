@@ -110,8 +110,8 @@
           <div class="fotos-section" *ngIf="evidencias.length > 0">
             <h3>Fotos enviadas</h3>
             <div class="fotos-grid">
-              <img *ngFor="let evidencia of evidencias" [src]="'http://127.0.0.1:8000' + evidencia.url"
-                class="foto-evidencia" (click)="abrirFoto('http://127.0.0.1:8000' + evidencia.url)" />
+              <img *ngFor="let evidencia of evidencias" [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url"
+                class="foto-evidencia" (click)="abrirFoto('https://autofix-production-0c6c.up.railway.app' + evidencia.url)" />
             </div>
           </div>
 

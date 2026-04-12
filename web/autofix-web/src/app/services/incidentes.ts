@@ -8,7 +8,7 @@ import { AuthService } from './auth';
 })
 export class IncidentesService {
 
-  private apiUrl = 'http://127.0.0.1:8000';
+  private apiUrl = 'https://autofix-production-0c6c.up.railway.app';
 
   constructor(private http: HttpClient, private authService: AuthService) {}
 

@@ -94,7 +94,7 @@ export class RegistroTallerComponent {
         body.set('username', this.taller.email);
         body.set('password', this.taller.contrasena);
 
-        this.http.post<any>('http://127.0.0.1:8000/auth/login', body.toString(), {
+        this.http.post<any>('https://autofix-production-0c6c.up.railway.app/auth/login', body.toString(), {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         }).subscribe({
           next: (respuesta) => {

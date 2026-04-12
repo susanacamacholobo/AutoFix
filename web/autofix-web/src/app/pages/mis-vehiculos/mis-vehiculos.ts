@@ -53,7 +53,7 @@ export class MisVehiculosComponent implements OnInit {
     this.error = '';
     this.cargando = true;
 
-    this.http.get<any>('http://127.0.0.1:8000/usuarios/me', {
+    this.http.get<any>('https://autofix-production-0c6c.up.railway.app/usuarios/me', {
       headers: { 'Authorization': `Bearer ${this.authService.obtenerToken()}` }
     }).subscribe({
       next: (usuario) => {

@@ -38,7 +38,7 @@ export class IncidentesComponent implements OnInit {
   }
 
   obtenerTaller(): void {
-    this.http.get<any>('http://127.0.0.1:8000/talleres/mi-taller', {
+    this.http.get<any>('https://autofix-production-0c6c.up.railway.app/talleres/mi-taller', {
       headers: { 'Authorization': `Bearer ${this.authService.obtenerToken()}` }
     }).subscribe({
       next: (taller) => {

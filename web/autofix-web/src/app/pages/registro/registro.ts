@@ -97,7 +97,7 @@ export class RegistroComponent {
         body.set('username', this.conductor.email);
         body.set('password', this.conductor.contrasena);
 
-        this.http.post<any>('http://127.0.0.1:8000/auth/login', body.toString(), {
+        this.http.post<any>('https://autofix-production-0c6c.up.railway.app/auth/login', body.toString(), {
           headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
         }).subscribe({
           next: (respuesta) => {

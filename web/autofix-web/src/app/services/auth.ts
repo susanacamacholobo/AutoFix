@@ -7,7 +7,8 @@ import { Observable } from 'rxjs';
 })
 export class AuthService {
 
-  private apiUrl = 'http://127.0.0.1:8000';
+  /////private apiUrl = 'https://autofix-production-0c6c.up.railway.app'; Cambiar luego
+  private apiUrl = 'https://autofix-production-0c6c.up.railway.app';
 
   constructor(private http: HttpClient) {}
 
