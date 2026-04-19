@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.schemas.incidente import IncidenteCreate, IncidenteUpdate, IncidenteResponse
 from app.services import incidente_service
+from app.services import ia_service
 from app.core.dependencies import get_current_user
 from app.models.usuario import Usuario
 from app.models.historial import Historial
@@ -17,10 +18,13 @@ router = APIRouter(
 @router.post("/", response_model=IncidenteResponse)
 def crear_incidente(
     incidente: IncidenteCreate,
+    background_tasks: BackgroundTasks,
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    return incidente_service.crear_incidente(db, incidente)
+    db_incidente = incidente_service.crear_incidente(db, incidente)
+    background_tasks.add_task(ia_service.analizar_incidente, db, db_incidente.id)
+    return db_incidente
 
 @router.get("/", response_model=List[IncidenteResponse])
 def listar_incidentes(
