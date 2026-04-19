@@ -35,7 +35,7 @@ Responde SOLO en este formato JSON sin bloques de código:
     try:
         cliente = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         respuesta = cliente.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-5",
             max_tokens=500,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -81,7 +81,7 @@ def analizar_imagen(url_imagen: str) -> str:
 
         cliente = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         respuesta = cliente.messages.create(
-            model="claude-sonnet-4-20250514",
+            model="claude-sonnet-4-5",
             max_tokens=300,
             messages=[
                 {
