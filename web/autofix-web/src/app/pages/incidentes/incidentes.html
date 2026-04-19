@@ -52,7 +52,7 @@
           <div *ngIf="rechazos.length === 0" class="empty-state">
             No has rechazado ninguna solicitud.
           </div>
-          <div class="incidente-card rechazo-card" *ngFor="let rechazo of rechazos">
+          <div class="incidente-card rechazo-card" *ngFor="let rechazo de rechazos">
             <div class="incidente-header">
               <span class="tipo">{{ rechazo.tipo || 'Sin clasificar' }}</span>
               <span class="badge badge-danger">rechazado</span>
@@ -95,6 +95,10 @@
               <span class="label">Descripción:</span>
               <span>{{ incidenteSeleccionado.descripcion || 'Sin descripción' }}</span>
             </div>
+            <div class="info-row" *ngIf="incidenteSeleccionado.resumen_ia">
+              <span class="label">Resumen IA:</span>
+              <span class="resumen-ia">{{ incidenteSeleccionado.resumen_ia }}</span>
+            </div>
             <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
               <span class="label">Ubicación:</span>
               <a [href]="'https://maps.google.com/?q=' + incidenteSeleccionado.latitud + ',' + incidenteSeleccionado.longitud"
@@ -111,11 +115,12 @@
             <h3>Evidencias enviadas</h3>
             <div class="fotos-grid">
               <img *ngFor="let evidencia of evidencias | filtrarTipo:'imagen'"
-                [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url" class="foto-evidencia"
-                (click)="abrirFoto('https://autofix-production-0c6c.up.railway.app' + evidencia.url)" />
+                [src]="evidencia.url"
+                class="foto-evidencia"
+                (click)="abrirFoto(evidencia.url)" />
             </div>
             <div *ngFor="let evidencia of evidencias | filtrarTipo:'audio'" class="audio-player">
-              <audio controls [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url"></audio>
+              <audio controls [src]="evidencia.url"></audio>
             </div>
           </div>
 
