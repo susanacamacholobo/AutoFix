@@ -1,8 +1,9 @@
 import os
 import base64
 import httpx
-import google.generativeai as genai
 from groq import Groq
+from google import genai
+from google.genai import types
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.models.evidencia import Evidencia
@@ -10,9 +11,8 @@ from app.models.incidente import Incidente
 
 load_dotenv()
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+cliente_gemini = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 cliente_groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
-modelo_gemini = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def descargar_archivo(url: str) -> bytes:
@@ -40,7 +40,10 @@ Responde SOLO en este formato JSON:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
-        respuesta = modelo_gemini.generate_content(prompt)
+        respuesta = cliente_gemini.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
         texto = respuesta.text.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(texto)
     except Exception as e:
@@ -80,17 +83,15 @@ def analizar_imagen(url_imagen: str) -> str:
         }
         media_type = media_types.get(extension, "image/jpeg")
 
-        imagen_base64 = base64.standard_b64encode(contenido).decode("utf-8")
-
-        respuesta = modelo_gemini.generate_content([
-            {
-                "mime_type": media_type,
-                "data": imagen_base64
-            },
-            """Eres un experto en daños vehiculares.
+        respuesta = cliente_gemini.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=[
+                types.Part.from_bytes(data=contenido, mime_type=media_type),
+                """Eres un experto en daños vehiculares.
 Describe brevemente en 1-2 oraciones qué daños o problemas visibles tiene el vehículo en la imagen.
 Si no hay daños visibles o la imagen no muestra un vehículo, indicalo."""
-        ])
+            ]
+        )
         return respuesta.text.strip()
     except Exception as e:
         print(f"Error analizando imagen: {e}")
