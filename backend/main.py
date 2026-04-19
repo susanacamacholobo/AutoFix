@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from app.db.database import engine
-from app.routers import usuarios, auth, roles, permisos, vehiculos, talleres, incidentes, evidencias
+from app.routers import usuarios, auth, roles, permisos, vehiculos, talleres, incidentes, evidencias, ia
 import os
 
 app = FastAPI(
@@ -34,6 +34,7 @@ app.include_router(vehiculos.router)
 app.include_router(talleres.router)
 app.include_router(incidentes.router)
 app.include_router(evidencias.router)
+app.include_router(ia.router)
 
 @app.get("/")
 def root():
