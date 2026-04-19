@@ -47,6 +47,17 @@ class IncidenteService {
     await request.send();
   }
 
+  Future<void> subirAudio(String token, int incidenteId, File audio) async {
+    final request = http.MultipartRequest(
+      'POST',
+      Uri.parse('$baseUrl/evidencias/subir/$incidenteId'),
+    );
+    request.headers['Authorization'] = 'Bearer $token';
+    request.fields['tipo'] = 'audio';
+    request.files.add(await http.MultipartFile.fromPath('archivo', audio.path));
+    await request.send();
+  }
+
   Future<List<dynamic>> listarEvidencias(String token, int incidenteId) async {
     final response = await http.get(
       Uri.parse('$baseUrl/evidencias/$incidenteId'),

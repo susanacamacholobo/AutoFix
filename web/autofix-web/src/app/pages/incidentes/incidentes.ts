@@ -5,11 +5,12 @@ import { IncidentesService } from '../../services/incidentes';
 import { TalleresService } from '../../services/talleres';
 import { AuthService } from '../../services/auth';
 import { HttpClient } from '@angular/common/http';
+import { FiltrarTipoPipe } from '../../pipes/filtrar-tipo-pipe';
 
 @Component({
   selector: 'app-incidentes',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, FiltrarTipoPipe],
   templateUrl: './incidentes.html',
   styleUrl: './incidentes.css'
 })

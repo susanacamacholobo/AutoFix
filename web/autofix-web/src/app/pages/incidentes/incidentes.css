@@ -354,3 +354,12 @@
   color: #888;
   font-style: italic;
 }
+
+.audio-player {
+  margin-top: 12px;
+}
+
+.audio-player audio {
+  width: 100%;
+  border-radius: 8px;
+}

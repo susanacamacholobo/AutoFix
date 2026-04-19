@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:record/record.dart';
+import 'package:path_provider/path_provider.dart';
 import '../services/incidente_service.dart';
 import '../services/vehiculos_service.dart';
 
@@ -12,14 +14,19 @@ class ReportarEmergenciaScreen extends StatefulWidget {
   const ReportarEmergenciaScreen({super.key, required this.token});
 
   @override
-  State<ReportarEmergenciaScreen> createState() => _ReportarEmergenciaScreenState();
+  State<ReportarEmergenciaScreen> createState() =>
+      _ReportarEmergenciaScreenState();
 }
 
 class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
   final _incidenteService = IncidenteService();
   final _vehiculosService = VehiculosService();
   final _imagePicker = ImagePicker();
+  final _audioRecorder = AudioRecorder();
 
+  bool _grabando = false;
+  String? _rutaAudio;
+  Duration _duracionGrabacion = Duration.zero;
   List<dynamic> _vehiculos = [];
   int? _vehiculoSeleccionado;
   String _tipoSeleccionado = '';
@@ -36,10 +43,30 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
   final _descripcionController = TextEditingController();
 
   final List<Map<String, dynamic>> _tiposEmergencia = [
-    {'tipo': 'bateria', 'emoji': '🔋', 'titulo': 'Se acabó la batería', 'descripcion': 'Mi vehículo no enciende por la batería'},
-    {'tipo': 'llanta', 'emoji': '🔧', 'titulo': 'Llanta pinchada', 'descripcion': 'Tengo una llanta pinchada'},
-    {'tipo': 'grua', 'emoji': '🚗', 'titulo': 'Necesito una grúa', 'descripcion': 'Mi vehículo no puede moverse, necesito grúa'},
-    {'tipo': 'otro', 'emoji': '❓', 'titulo': 'Otra emergencia', 'descripcion': ''},
+    {
+      'tipo': 'bateria',
+      'emoji': '🔋',
+      'titulo': 'Se acabó la batería',
+      'descripcion': 'Mi vehículo no enciende por la batería',
+    },
+    {
+      'tipo': 'llanta',
+      'emoji': '🔧',
+      'titulo': 'Llanta pinchada',
+      'descripcion': 'Tengo una llanta pinchada',
+    },
+    {
+      'tipo': 'grua',
+      'emoji': '🚗',
+      'titulo': 'Necesito una grúa',
+      'descripcion': 'Mi vehículo no puede moverse, necesito grúa',
+    },
+    {
+      'tipo': 'otro',
+      'emoji': '❓',
+      'titulo': 'Otra emergencia',
+      'descripcion': '',
+    },
   ];
 
   @override
@@ -50,12 +77,18 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
 
   Future<void> _cargarDatos() async {
     try {
-      final vehiculos = await _vehiculosService.listarMisVehiculos(widget.token);
+      final vehiculos = await _vehiculosService.listarMisVehiculos(
+        widget.token,
+      );
       final parts = widget.token.split('.');
-      final payload = jsonDecode(utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))));
+      final payload = jsonDecode(
+        utf8.decode(base64Url.decode(base64Url.normalize(parts[1]))),
+      );
       setState(() {
         _vehiculos = vehiculos;
-        _usuarioId = payload['id'] is int ? payload['id'] : int.tryParse(payload['id'].toString()) ?? 0;
+        _usuarioId = payload['id'] is int
+            ? payload['id']
+            : int.tryParse(payload['id'].toString()) ?? 0;
         _cargandoVehiculos = false;
       });
     } catch (e) {
@@ -83,7 +116,8 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
       setState(() {
         _latitud = position.latitude;
         _longitud = position.longitude;
-        _ubicacionTexto = 'Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}';
+        _ubicacionTexto =
+            'Lat: ${position.latitude.toStringAsFixed(4)}, Lng: ${position.longitude.toStringAsFixed(4)}';
         _cargandoUbicacion = false;
       });
     } catch (e) {
@@ -95,17 +129,70 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
   }
 
   Future<void> _tomarFoto() async {
-    final foto = await _imagePicker.pickImage(source: ImageSource.camera, imageQuality: 70);
+    final foto = await _imagePicker.pickImage(
+      source: ImageSource.camera,
+      imageQuality: 70,
+    );
     if (foto != null) {
       setState(() => _fotos.add(foto));
     }
   }
 
   Future<void> _seleccionarFoto() async {
-    final foto = await _imagePicker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final foto = await _imagePicker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 70,
+    );
     if (foto != null) {
       setState(() => _fotos.add(foto));
     }
+  }
+
+  Future<void> _iniciarGrabacion() async {
+    final permiso = await _audioRecorder.hasPermission();
+    if (!permiso) {
+      setState(() => _error = 'Permisos de micrófono denegados');
+      return;
+    }
+    final directorio = await getTemporaryDirectory();
+    final ruta = '${directorio.path}/audio_emergencia.m4a';
+    await _audioRecorder.start(
+      const RecordConfig(encoder: AudioEncoder.aacLc),
+      path: ruta,
+    );
+    setState(() {
+      _grabando = true;
+      _rutaAudio = ruta;
+      _duracionGrabacion = Duration.zero;
+    });
+    _iniciarTimer();
+  }
+
+  void _iniciarTimer() {
+    Future.doWhile(() async {
+      await Future.delayed(const Duration(seconds: 1));
+      if (!_grabando) return false;
+      setState(() => _duracionGrabacion += const Duration(seconds: 1));
+      return true;
+    });
+  }
+
+  Future<void> _detenerGrabacion() async {
+    await _audioRecorder.stop();
+    setState(() => _grabando = false);
+  }
+
+  Future<void> _eliminarAudio() async {
+    setState(() {
+      _rutaAudio = null;
+      _duracionGrabacion = Duration.zero;
+    });
+  }
+
+  String _formatearDuracion(Duration d) {
+    final minutos = d.inMinutes.toString().padLeft(2, '0');
+    final segundos = (d.inSeconds % 60).toString().padLeft(2, '0');
+    return '$minutos:$segundos';
   }
 
   Future<void> _reportarEmergencia() async {
@@ -124,7 +211,9 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
     });
 
     try {
-      final tipoData = _tiposEmergencia.firstWhere((t) => t['tipo'] == _tipoSeleccionado);
+      final tipoData = _tiposEmergencia.firstWhere(
+        (t) => t['tipo'] == _tipoSeleccionado,
+      );
       final descripcionFinal = _tipoSeleccionado == 'otro'
           ? _descripcionController.text
           : tipoData['descripcion'];
@@ -141,14 +230,29 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
 
       // Subir fotos
       for (final foto in _fotos) {
-        await _incidenteService.subirFoto(widget.token, incidente['id'], File(foto.path));
+        await _incidenteService.subirFoto(
+          widget.token,
+          incidente['id'],
+          File(foto.path),
+        );
+      }
+
+      // Subir audio
+      if (_rutaAudio != null) {
+        await _incidenteService.subirAudio(
+          widget.token,
+          incidente['id'],
+          File(_rutaAudio!),
+        );
       }
 
       setState(() => _cargando = false);
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('¡Emergencia reportada! Un taller te contactará pronto.'),
+          content: Text(
+            '¡Emergencia reportada! Un taller te contactará pronto.',
+          ),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 3),
         ),
@@ -173,7 +277,9 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
         foregroundColor: Colors.white,
       ),
       body: _cargandoVehiculos
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFE63946)))
+          ? const Center(
+              child: CircularProgressIndicator(color: Color(0xFFE63946)),
+            )
           : SingleChildScrollView(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -183,34 +289,59 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                   _buildCard(
                     titulo: '¿Qué vehículo tiene el problema?',
                     child: Column(
-                      children: _vehiculos.map((v) => GestureDetector(
-                        onTap: () => setState(() => _vehiculoSeleccionado = v['id']),
-                        child: Container(
-                          margin: const EdgeInsets.only(bottom: 8),
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: _vehiculoSeleccionado == v['id'] ? const Color(0xFFE63946) : Colors.grey.shade300,
-                              width: 2,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                            color: _vehiculoSeleccionado == v['id'] ? const Color(0xFFFFF0F0) : Colors.white,
-                          ),
-                          child: Row(
-                            children: [
-                              const Text('🚗', style: TextStyle(fontSize: 24)),
-                              const SizedBox(width: 12),
-                              Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text('${v['marca']} ${v['modelo']}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                                  Text('Placa: ${v['placa']}', style: const TextStyle(color: Colors.grey, fontSize: 13)),
-                                ],
+                      children: _vehiculos
+                          .map(
+                            (v) => GestureDetector(
+                              onTap: () => setState(
+                                () => _vehiculoSeleccionado = v['id'],
                               ),
-                            ],
-                          ),
-                        ),
-                      )).toList(),
+                              child: Container(
+                                margin: const EdgeInsets.only(bottom: 8),
+                                padding: const EdgeInsets.all(12),
+                                decoration: BoxDecoration(
+                                  border: Border.all(
+                                    color: _vehiculoSeleccionado == v['id']
+                                        ? const Color(0xFFE63946)
+                                        : Colors.grey.shade300,
+                                    width: 2,
+                                  ),
+                                  borderRadius: BorderRadius.circular(8),
+                                  color: _vehiculoSeleccionado == v['id']
+                                      ? const Color(0xFFFFF0F0)
+                                      : Colors.white,
+                                ),
+                                child: Row(
+                                  children: [
+                                    const Text(
+                                      '🚗',
+                                      style: TextStyle(fontSize: 24),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          '${v['marca']} ${v['modelo']}',
+                                          style: const TextStyle(
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        Text(
+                                          'Placa: ${v['placa']}',
+                                          style: const TextStyle(
+                                            color: Colors.grey,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          )
+                          .toList(),
                     ),
                   ),
                   const SizedBox(height: 16),
@@ -227,40 +358,75 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                           crossAxisSpacing: 12,
                           mainAxisSpacing: 12,
                           childAspectRatio: 1.3,
-                          children: _tiposEmergencia.map((tipo) => GestureDetector(
-                            onTap: () => setState(() => _tipoSeleccionado = tipo['tipo']),
-                            child: Container(
-                              padding: const EdgeInsets.all(12),
-                              decoration: BoxDecoration(
-                                border: Border.all(
-                                  color: _tipoSeleccionado == tipo['tipo'] ? const Color(0xFFE63946) : Colors.grey.shade300,
-                                  width: 2,
+                          children: _tiposEmergencia
+                              .map(
+                                (tipo) => GestureDetector(
+                                  onTap: () => setState(
+                                    () => _tipoSeleccionado = tipo['tipo'],
+                                  ),
+                                  child: Container(
+                                    padding: const EdgeInsets.all(12),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: _tipoSeleccionado == tipo['tipo']
+                                            ? const Color(0xFFE63946)
+                                            : Colors.grey.shade300,
+                                        width: 2,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                      color: _tipoSeleccionado == tipo['tipo']
+                                          ? const Color(0xFFFFF0F0)
+                                          : Colors.white,
+                                    ),
+                                    child: Column(
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.center,
+                                      children: [
+                                        Text(
+                                          tipo['emoji'],
+                                          style: const TextStyle(fontSize: 28),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          tipo['titulo'],
+                                          style: const TextStyle(
+                                            fontSize: 12,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                          textAlign: TextAlign.center,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
-                                borderRadius: BorderRadius.circular(12),
-                                color: _tipoSeleccionado == tipo['tipo'] ? const Color(0xFFFFF0F0) : Colors.white,
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  Text(tipo['emoji'], style: const TextStyle(fontSize: 28)),
-                                  const SizedBox(height: 6),
-                                  Text(tipo['titulo'], style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600), textAlign: TextAlign.center),
-                                ],
-                              ),
-                            ),
-                          )).toList(),
+                              )
+                              .toList(),
                         ),
                         if (_tipoSeleccionado == 'otro') ...[
                           const SizedBox(height: 16),
-                          const Align(alignment: Alignment.centerLeft, child: Text('Describe tu emergencia:', style: TextStyle(fontWeight: FontWeight.w500))),
+                          const Align(
+                            alignment: Alignment.centerLeft,
+                            child: Text(
+                              'Describe tu emergencia:',
+                              style: TextStyle(fontWeight: FontWeight.w500),
+                            ),
+                          ),
                           const SizedBox(height: 8),
                           TextField(
                             controller: _descripcionController,
                             maxLines: 3,
                             decoration: InputDecoration(
-                              hintText: 'Describe el problema de tu vehículo...',
-                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-                              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE63946))),
+                              hintText:
+                                  'Describe el problema de tu vehículo...',
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              focusedBorder: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(8),
+                                borderSide: const BorderSide(
+                                  color: Color(0xFFE63946),
+                                ),
+                              ),
                             ),
                           ),
                         ],
@@ -279,24 +445,50 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                           Container(
                             padding: const EdgeInsets.all(10),
                             margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(color: const Color(0xFFD4EDDA), borderRadius: BorderRadius.circular(8)),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4EDDA),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
                             child: Row(
                               children: [
-                                const Icon(Icons.location_on, color: Color(0xFF155724), size: 18),
+                                const Icon(
+                                  Icons.location_on,
+                                  color: Color(0xFF155724),
+                                  size: 18,
+                                ),
                                 const SizedBox(width: 8),
-                                Text(_ubicacionTexto, style: const TextStyle(color: Color(0xFF155724), fontSize: 13)),
+                                Text(
+                                  _ubicacionTexto,
+                                  style: const TextStyle(
+                                    color: Color(0xFF155724),
+                                    fontSize: 13,
+                                  ),
+                                ),
                               ],
                             ),
                           ),
                         SizedBox(
                           width: double.infinity,
                           child: OutlinedButton.icon(
-                            onPressed: _cargandoUbicacion ? null : _obtenerUbicacion,
+                            onPressed: _cargandoUbicacion
+                                ? null
+                                : _obtenerUbicacion,
                             icon: _cargandoUbicacion
-                                ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
-                                : const Icon(Icons.my_location, color: Color(0xFFE63946)),
+                                ? const SizedBox(
+                                    width: 16,
+                                    height: 16,
+                                    child: CircularProgressIndicator(
+                                      strokeWidth: 2,
+                                    ),
+                                  )
+                                : const Icon(
+                                    Icons.my_location,
+                                    color: Color(0xFFE63946),
+                                  ),
                             label: Text(
-                              _ubicacionTexto.isEmpty ? 'Obtener mi ubicación' : 'Actualizar ubicación',
+                              _ubicacionTexto.isEmpty
+                                  ? 'Obtener mi ubicación'
+                                  : 'Actualizar ubicación',
                               style: const TextStyle(color: Color(0xFFE63946)),
                             ),
                             style: OutlinedButton.styleFrom(
@@ -331,18 +523,30 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(8),
                                       image: DecorationImage(
-                                        image: FileImage(File(_fotos[index].path)),
+                                        image: FileImage(
+                                          File(_fotos[index].path),
+                                        ),
                                         fit: BoxFit.cover,
                                       ),
                                     ),
                                   ),
                                   Positioned(
-                                    top: 0, right: 8,
+                                    top: 0,
+                                    right: 8,
                                     child: GestureDetector(
-                                      onTap: () => setState(() => _fotos.removeAt(index)),
+                                      onTap: () => setState(
+                                        () => _fotos.removeAt(index),
+                                      ),
                                       child: Container(
-                                        decoration: const BoxDecoration(color: Colors.red, shape: BoxShape.circle),
-                                        child: const Icon(Icons.close, color: Colors.white, size: 16),
+                                        decoration: const BoxDecoration(
+                                          color: Colors.red,
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 16,
+                                        ),
                                       ),
                                     ),
                                   ),
@@ -357,21 +561,131 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: _tomarFoto,
-                                icon: const Icon(Icons.camera_alt, color: Color(0xFFE63946)),
-                                label: const Text('Cámara', style: TextStyle(color: Color(0xFFE63946))),
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFFE63946))),
+                                icon: const Icon(
+                                  Icons.camera_alt,
+                                  color: Color(0xFFE63946),
+                                ),
+                                label: const Text(
+                                  'Cámara',
+                                  style: TextStyle(color: Color(0xFFE63946)),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFFE63946),
+                                  ),
+                                ),
                               ),
                             ),
                             const SizedBox(width: 12),
                             Expanded(
                               child: OutlinedButton.icon(
                                 onPressed: _seleccionarFoto,
-                                icon: const Icon(Icons.photo_library, color: Color(0xFFE63946)),
-                                label: const Text('Galería', style: TextStyle(color: Color(0xFFE63946))),
-                                style: OutlinedButton.styleFrom(side: const BorderSide(color: Color(0xFFE63946))),
+                                icon: const Icon(
+                                  Icons.photo_library,
+                                  color: Color(0xFFE63946),
+                                ),
+                                label: const Text(
+                                  'Galería',
+                                  style: TextStyle(color: Color(0xFFE63946)),
+                                ),
+                                style: OutlinedButton.styleFrom(
+                                  side: const BorderSide(
+                                    color: Color(0xFFE63946),
+                                  ),
+                                ),
                               ),
                             ),
                           ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Audio
+                  _buildCard(
+                    titulo: '🎤 Grabar audio',
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (_rutaAudio != null && !_grabando)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFD4EDDA),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(Icons.mic, color: Color(0xFF155724)),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Audio grabado: ${_formatearDuracion(_duracionGrabacion)}',
+                                  style: const TextStyle(
+                                    color: Color(0xFF155724),
+                                  ),
+                                ),
+                                const Spacer(),
+                                GestureDetector(
+                                  onTap: _eliminarAudio,
+                                  child: const Icon(
+                                    Icons.close,
+                                    color: Color(0xFF155724),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        if (_grabando)
+                          Container(
+                            padding: const EdgeInsets.all(12),
+                            margin: const EdgeInsets.only(bottom: 12),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFFFF0F0),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Row(
+                              children: [
+                                const Icon(
+                                  Icons.fiber_manual_record,
+                                  color: Color(0xFFE63946),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Grabando... ${_formatearDuracion(_duracionGrabacion)}',
+                                  style: const TextStyle(
+                                    color: Color(0xFFE63946),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: _grabando
+                                ? _detenerGrabacion
+                                : (_rutaAudio == null
+                                      ? _iniciarGrabacion
+                                      : null),
+                            icon: Icon(
+                              _grabando ? Icons.stop : Icons.mic,
+                              color: const Color(0xFFE63946),
+                            ),
+                            label: Text(
+                              _grabando
+                                  ? 'Detener grabación'
+                                  : (_rutaAudio == null
+                                        ? 'Iniciar grabación'
+                                        : 'Audio grabado'),
+                              style: const TextStyle(color: Color(0xFFE63946)),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              side: const BorderSide(color: Color(0xFFE63946)),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                            ),
+                          ),
                         ),
                       ],
                     ),
@@ -383,8 +697,14 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                       width: double.infinity,
                       padding: const EdgeInsets.all(12),
                       margin: const EdgeInsets.only(bottom: 16),
-                      decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(8)),
-                      child: Text(_error, style: const TextStyle(color: Color(0xFFE63946))),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFFFF0F0),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        _error,
+                        style: const TextStyle(color: Color(0xFFE63946)),
+                      ),
                     ),
 
                   SizedBox(
@@ -394,12 +714,20 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFE63946),
                         padding: const EdgeInsets.symmetric(vertical: 16),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
                       ),
                       child: _cargando
                           ? const CircularProgressIndicator(color: Colors.white)
-                          : const Text('🚨 Reportar Emergencia',
-                              style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold)),
+                          : const Text(
+                              '🚨 Reportar Emergencia',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
                     ),
                   ),
                   const SizedBox(height: 24),
@@ -416,12 +744,17 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+        boxShadow: [
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(titulo, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+          Text(
+            titulo,
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 12),
           child,
         ],

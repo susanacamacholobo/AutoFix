@@ -106,12 +106,16 @@
             </div>
           </div>
 
-          <!-- Fotos del incidente -->
+          <!-- Evidencias del incidente -->
           <div class="fotos-section" *ngIf="evidencias.length > 0">
-            <h3>Fotos enviadas</h3>
+            <h3>Evidencias enviadas</h3>
             <div class="fotos-grid">
-              <img *ngFor="let evidencia of evidencias" [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url"
-                class="foto-evidencia" (click)="abrirFoto('https://autofix-production-0c6c.up.railway.app' + evidencia.url)" />
+              <img *ngFor="let evidencia of evidencias | filtrarTipo:'imagen'"
+                [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url" class="foto-evidencia"
+                (click)="abrirFoto('https://autofix-production-0c6c.up.railway.app' + evidencia.url)" />
+            </div>
+            <div *ngFor="let evidencia of evidencias | filtrarTipo:'audio'" class="audio-player">
+              <audio controls [src]="'https://autofix-production-0c6c.up.railway.app' + evidencia.url"></audio>
             </div>
           </div>
 
