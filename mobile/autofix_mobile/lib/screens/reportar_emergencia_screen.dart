@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:io';
-import 'package:http/http.dart' as http;
 import 'package:geolocator/geolocator.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:record/record.dart';
@@ -29,7 +28,6 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
   Duration _duracionGrabacion = Duration.zero;
   List<dynamic> _vehiculos = [];
   int? _vehiculoSeleccionado;
-  String _tipoSeleccionado = '';
   bool _cargando = false;
   bool _cargandoVehiculos = true;
   bool _cargandoUbicacion = false;
@@ -41,33 +39,6 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
   List<XFile> _fotos = [];
 
   final _descripcionController = TextEditingController();
-
-  final List<Map<String, dynamic>> _tiposEmergencia = [
-    {
-      'tipo': 'bateria',
-      'emoji': '🔋',
-      'titulo': 'Se acabó la batería',
-      'descripcion': 'Mi vehículo no enciende por la batería',
-    },
-    {
-      'tipo': 'llanta',
-      'emoji': '🔧',
-      'titulo': 'Llanta pinchada',
-      'descripcion': 'Tengo una llanta pinchada',
-    },
-    {
-      'tipo': 'grua',
-      'emoji': '🚗',
-      'titulo': 'Necesito una grúa',
-      'descripcion': 'Mi vehículo no puede moverse, necesito grúa',
-    },
-    {
-      'tipo': 'otro',
-      'emoji': '❓',
-      'titulo': 'Otra emergencia',
-      'descripcion': '',
-    },
-  ];
 
   @override
   void initState() {
@@ -200,8 +171,9 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
       setState(() => _error = 'Selecciona un vehículo');
       return;
     }
-    if (_tipoSeleccionado.isEmpty) {
-      setState(() => _error = 'Selecciona el tipo de emergencia');
+    // DESPUÉS
+    if (_descripcionController.text.isEmpty) {
+      setState(() => _error = 'Describe tu emergencia');
       return;
     }
 
@@ -211,19 +183,11 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
     });
 
     try {
-      final tipoData = _tiposEmergencia.firstWhere(
-        (t) => t['tipo'] == _tipoSeleccionado,
-      );
-      final descripcionFinal = _tipoSeleccionado == 'otro'
-          ? _descripcionController.text
-          : tipoData['descripcion'];
-
-      // Crear incidente
       final incidente = await _incidenteService.crearIncidente(widget.token, {
         'usuario_id': _usuarioId,
         'vehiculo_id': _vehiculoSeleccionado,
-        'tipo': _tipoSeleccionado,
-        'descripcion': descripcionFinal,
+        'tipo': 'otro',
+        'descripcion': _descripcionController.text,
         'latitud': _latitud,
         'longitud': _longitud,
       });
@@ -349,88 +313,21 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
                   // Tipo de emergencia
                   _buildCard(
                     titulo: '¿Qué te pasó?',
-                    child: Column(
-                      children: [
-                        GridView.count(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          crossAxisCount: 2,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 1.3,
-                          children: _tiposEmergencia
-                              .map(
-                                (tipo) => GestureDetector(
-                                  onTap: () => setState(
-                                    () => _tipoSeleccionado = tipo['tipo'],
-                                  ),
-                                  child: Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: BoxDecoration(
-                                      border: Border.all(
-                                        color: _tipoSeleccionado == tipo['tipo']
-                                            ? const Color(0xFFE63946)
-                                            : Colors.grey.shade300,
-                                        width: 2,
-                                      ),
-                                      borderRadius: BorderRadius.circular(12),
-                                      color: _tipoSeleccionado == tipo['tipo']
-                                          ? const Color(0xFFFFF0F0)
-                                          : Colors.white,
-                                    ),
-                                    child: Column(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
-                                      children: [
-                                        Text(
-                                          tipo['emoji'],
-                                          style: const TextStyle(fontSize: 28),
-                                        ),
-                                        const SizedBox(height: 6),
-                                        Text(
-                                          tipo['titulo'],
-                                          style: const TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.w600,
-                                          ),
-                                          textAlign: TextAlign.center,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              )
-                              .toList(),
+                    child: TextField(
+                      controller: _descripcionController,
+                      maxLines: 4,
+                      decoration: InputDecoration(
+                        hintText: 'Describe el problema de tu vehículo...',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
                         ),
-                        if (_tipoSeleccionado == 'otro') ...[
-                          const SizedBox(height: 16),
-                          const Align(
-                            alignment: Alignment.centerLeft,
-                            child: Text(
-                              'Describe tu emergencia:',
-                              style: TextStyle(fontWeight: FontWeight.w500),
-                            ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(8),
+                          borderSide: const BorderSide(
+                            color: Color(0xFFE63946),
                           ),
-                          const SizedBox(height: 8),
-                          TextField(
-                            controller: _descripcionController,
-                            maxLines: 3,
-                            decoration: InputDecoration(
-                              hintText:
-                                  'Describe el problema de tu vehículo...',
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: const BorderSide(
-                                  color: Color(0xFFE63946),
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ],
+                        ),
+                      ),
                     ),
                   ),
                   const SizedBox(height: 16),
