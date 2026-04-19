@@ -11,8 +11,11 @@ from app.models.incidente import Incidente
 
 load_dotenv()
 
-cliente_gemini = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-cliente_groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
+def get_gemini():
+    return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
+def get_groq():
+    return Groq(api_key=os.getenv("GROQ_API_KEY"))
 
 
 def descargar_archivo(url: str) -> bytes:
@@ -40,7 +43,7 @@ Responde SOLO en este formato JSON:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
-        respuesta = cliente_gemini.models.generate_content(
+        respuesta = get_gemini().models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
         )
@@ -57,7 +60,7 @@ def transcribir_audio(url_audio: str) -> str:
         contenido = descargar_archivo(url_audio)
         nombre_archivo = url_audio.split("/")[-1]
 
-        transcripcion = cliente_groq.audio.transcriptions.create(
+        transcripcion = get_groq().audio.transcriptions.create(
             file=(nombre_archivo, contenido),
             model="whisper-large-v3",
             language="es"
@@ -83,7 +86,7 @@ def analizar_imagen(url_imagen: str) -> str:
         }
         media_type = media_types.get(extension, "image/jpeg")
 
-        respuesta = cliente_gemini.models.generate_content(
+        respuesta = get_gemini().models.generate_content(
             model="gemini-2.0-flash",
             contents=[
                 types.Part.from_bytes(data=contenido, mime_type=media_type),
