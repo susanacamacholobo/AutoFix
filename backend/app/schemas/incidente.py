@@ -28,6 +28,7 @@ class IncidenteResponse(IncidenteBase):
     estado: str
     fecha_creacion: datetime
     fecha_atencion: Optional[datetime] = None
+    resumen_ia: Optional[str] = None
 
     class Config:
         from_attributes = True
