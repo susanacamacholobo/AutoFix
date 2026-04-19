@@ -11,6 +11,7 @@ from app.models.incidente import Incidente
 
 load_dotenv()
 
+
 def get_gemini():
     return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
@@ -39,7 +40,7 @@ Analiza la siguiente descripción de un incidente vehicular y extrae:
 
 Descripción: {descripcion}
 
-Responde SOLO en este formato JSON:
+Responde SOLO en este formato JSON sin bloques de código:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
@@ -110,6 +111,10 @@ def analizar_incidente(db: Session, incidente_id: int):
     if not incidente:
         return
 
+    # Si ya tiene resumen_ia no volver a analizar
+    if incidente.resumen_ia:
+        return
+
     evidencias = db.query(Evidencia).filter(Evidencia.incidente_id == incidente_id).all()
 
     resumen_texto = {}
@@ -136,15 +141,16 @@ def analizar_incidente(db: Session, incidente_id: int):
         partes_resumen.append(f"Descripción: {resumen_texto['resumen']}")
 
     if transcripciones:
-        partes_resumen.append(f"Audio: {' '.join(transcripciones)}")
+        partes_resumen.append(f"Audio: {transcripciones[0]}")
 
     if analisis_imagenes:
-        partes_resumen.append(f"Imágenes: {' '.join(analisis_imagenes)}")
+        partes_resumen.append(f"Imágenes: {analisis_imagenes[0]}")
 
     resumen_final = " | ".join(partes_resumen) if partes_resumen else "Sin información adicional"
     tipo_detectado = resumen_texto.get("tipo", incidente.tipo or "desconocido")
 
-    incidente.descripcion = resumen_final
+    # Guardar en resumen_ia sin tocar la descripcion original
+    incidente.resumen_ia = resumen_final
     incidente.tipo = tipo_detectado
     db.commit()
     db.refresh(incidente)

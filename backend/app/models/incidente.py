@@ -19,6 +19,7 @@ class Incidente(Base):
     estado = Column(String(20), default='pendiente')
     fecha_creacion = Column(DateTime, server_default=func.now())
     fecha_atencion = Column(DateTime, nullable=True)
+    resumen_ia = Column(Text, nullable=True)
 
     usuario = relationship("Usuario", foreign_keys=[usuario_id])
     vehiculo = relationship("Vehiculo", foreign_keys=[vehiculo_id])

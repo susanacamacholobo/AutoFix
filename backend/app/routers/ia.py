@@ -51,5 +51,5 @@ def obtener_resumen(
         "tipo": incidente.tipo,
         "prioridad": incidente.prioridad,
         "estado": incidente.estado,
-        "resumen": incidente.descripcion
+        "resumen": incidente.resumen_ia
     }
