@@ -9,11 +9,18 @@ from app.models.usuario import Usuario
 from app.models.historial import Historial
 from app.services import taller_service
 from typing import List
+import time
 
 router = APIRouter(
     prefix="/incidentes",
     tags=["incidentes"]
 )
+
+
+def analizar_con_delay(db: Session, incidente_id: int):
+    time.sleep(20)
+    ia_service.analizar_incidente(db, incidente_id)
+
 
 @router.post("/", response_model=IncidenteResponse)
 def crear_incidente(
@@ -23,8 +30,9 @@ def crear_incidente(
     current_user: Usuario = Depends(get_current_user)
 ):
     db_incidente = incidente_service.crear_incidente(db, incidente)
-    background_tasks.add_task(ia_service.analizar_incidente, db, db_incidente.id)
+    background_tasks.add_task(analizar_con_delay, db, db_incidente.id)
     return db_incidente
+
 
 @router.get("/", response_model=List[IncidenteResponse])
 def listar_incidentes(
@@ -33,6 +41,7 @@ def listar_incidentes(
 ):
     return incidente_service.get_incidentes(db)
 
+
 @router.get("/pendientes", response_model=List[IncidenteResponse])
 def listar_incidentes_pendientes(
     db: Session = Depends(get_db),
@@ -40,12 +49,14 @@ def listar_incidentes_pendientes(
 ):
     return incidente_service.get_incidentes_pendientes(db)
 
+
 @router.get("/mis-incidentes", response_model=List[IncidenteResponse])
 def listar_mis_incidentes(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
     return incidente_service.get_incidentes_por_usuario(db, current_user.id)
+
 
 @router.get("/historial-rechazos/{taller_id}")
 def historial_rechazos(
@@ -72,6 +83,7 @@ def historial_rechazos(
             })
     return resultado
 
+
 @router.get("/{id}", response_model=IncidenteResponse)
 def obtener_incidente(
     id: int,
@@ -82,6 +94,7 @@ def obtener_incidente(
     if not db_incidente:
         raise HTTPException(status_code=404, detail="Incidente no encontrado")
     return db_incidente
+
 
 @router.put("/{id}", response_model=IncidenteResponse)
 def actualizar_incidente(
