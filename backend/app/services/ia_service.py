@@ -99,13 +99,16 @@ def analizar_imagen(url_imagen: str) -> str:
                             "type": "text",
                             "text": """Eres un experto en daños vehiculares.
 Describe brevemente en 1-2 oraciones qué daños o problemas visibles tiene el vehículo en la imagen.
-Si no hay daños visibles o la imagen no muestra un vehículo, indicalo."""
+Si no hay daños visibles o la imagen no muestra un vehículo, indicalo.
+No uses markdown, asteriscos, ni símbolos de formato. Solo texto plano."""
                         }
                     ]
                 }
             ]
         )
-        return respuesta.content[0].text.strip()
+        texto = respuesta.content[0].text.strip()
+        texto = texto.replace("**", "").replace("# ", "").replace("##", "").replace("#", "")
+        return texto
     except Exception as e:
         print(f"Error analizando imagen: {e}")
         return ""

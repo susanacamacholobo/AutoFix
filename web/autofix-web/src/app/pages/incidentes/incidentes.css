@@ -381,18 +381,21 @@
 .resumen-bloques {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .resumen-bloque {
   display: flex;
   gap: 12px;
   align-items: flex-start;
-  background: white;
   padding: 12px;
   border-radius: 8px;
   box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
+
+.resumen-bloque:nth-child(1) { background-color: #e8f4fd; }
+.resumen-bloque:nth-child(2) { background-color: #e8f8f0; }
+.resumen-bloque:nth-child(3) { background-color: #f3e8fd; }
 
 .resumen-icono {
   font-size: 1.4rem;
@@ -403,12 +406,15 @@
 .resumen-label {
   font-weight: 600;
   font-size: 0.8rem;
-  color: #e63946;
   display: block;
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
+
+.resumen-bloque:nth-child(1) .resumen-label { color: #1a6fa8; }
+.resumen-bloque:nth-child(2) .resumen-label { color: #1a7a45; }
+.resumen-bloque:nth-child(3) .resumen-label { color: #7b2fa8; }
 
 .resumen-texto {
   font-size: 0.88rem;
