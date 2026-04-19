@@ -9,14 +9,6 @@ from app.models.evidencia import Evidencia
 from app.models.incidente import Incidente
 
 
-
-def get_gemini():
-    return genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
-
-def get_groq():
-    return Groq(api_key=os.getenv("GROQ_API_KEY"))
-
-
 def descargar_archivo(url: str) -> bytes:
     """Descarga un archivo desde una URL y retorna su contenido en bytes."""
     with httpx.Client() as client:
@@ -42,7 +34,8 @@ Responde SOLO en este formato JSON sin bloques de código:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
-        respuesta = get_gemini().models.generate_content(
+        cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        respuesta = cliente.models.generate_content(
             model="gemini-2.0-flash",
             contents=prompt
         )
@@ -58,8 +51,8 @@ def transcribir_audio(url_audio: str) -> str:
     try:
         contenido = descargar_archivo(url_audio)
         nombre_archivo = url_audio.split("/")[-1]
-
-        transcripcion = get_groq().audio.transcriptions.create(
+        cliente = Groq(api_key=os.environ["GROQ_API_KEY"])
+        transcripcion = cliente.audio.transcriptions.create(
             file=(nombre_archivo, contenido),
             model="whisper-large-v3",
             language="es"
@@ -85,7 +78,8 @@ def analizar_imagen(url_imagen: str) -> str:
         }
         media_type = media_types.get(extension, "image/jpeg")
 
-        respuesta = get_gemini().models.generate_content(
+        cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
+        respuesta = cliente.models.generate_content(
             model="gemini-2.0-flash",
             contents=[
                 types.Part.from_bytes(data=contenido, mime_type=media_type),
@@ -109,7 +103,6 @@ def analizar_incidente(db: Session, incidente_id: int):
     if not incidente:
         return
 
-    # Si ya tiene resumen_ia no volver a analizar
     if incidente.resumen_ia:
         return
 
@@ -147,7 +140,6 @@ def analizar_incidente(db: Session, incidente_id: int):
     resumen_final = " | ".join(partes_resumen) if partes_resumen else "Sin información adicional"
     tipo_detectado = resumen_texto.get("tipo", incidente.tipo or "desconocido")
 
-    # Guardar en resumen_ia sin tocar la descripcion original
     incidente.resumen_ia = resumen_final
     incidente.tipo = tipo_detectado
     db.commit()
