@@ -1,20 +1,27 @@
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy.orm import Session
 from app.db.database import get_db
 from app.core.dependencies import get_current_user
 from app.models.usuario import Usuario
 from app.models.evidencia import Evidencia
-import aiofiles
+from dotenv import load_dotenv
+import cloudinary
+import cloudinary.uploader
 import os
-import uuid
+
+load_dotenv()
+
+cloudinary.config(
+    cloud_name=os.getenv("CLOUDINARY_CLOUD_NAME"),
+    api_key=os.getenv("CLOUDINARY_API_KEY"),
+    api_secret=os.getenv("CLOUDINARY_API_SECRET")
+)
 
 router = APIRouter(
     prefix="/evidencias",
     tags=["evidencias"]
 )
 
-UPLOAD_DIR = "uploads"
 
 @router.post("/subir/{incidente_id}")
 async def subir_evidencia(
@@ -24,15 +31,26 @@ async def subir_evidencia(
     db: Session = Depends(get_db),
     current_user: Usuario = Depends(get_current_user)
 ):
-    extension = archivo.filename.split(".")[-1]
-    nombre_archivo = f"{uuid.uuid4()}.{extension}"
-    ruta = os.path.join(UPLOAD_DIR, nombre_archivo)
+    contenido = await archivo.read()
 
-    async with aiofiles.open(ruta, 'wb') as f:
-        contenido = await archivo.read()
-        await f.write(contenido)
+    extension = archivo.filename.split(".")[-1].lower()
 
-    url = f"/uploads/{nombre_archivo}"
+    # Determinar el resource_type según el tipo de archivo
+    if tipo == "audio" or extension in ("mp3", "wav", "ogg", "m4a", "aac"):
+        resource_type = "video"  # Cloudinary usa "video" para audio también
+    elif tipo in ("imagen", "foto") or extension in ("jpg", "jpeg", "png", "webp", "gif"):
+        resource_type = "image"
+    else:
+        resource_type = "auto"
+
+    # Subir a Cloudinary
+    resultado = cloudinary.uploader.upload(
+        contenido,
+        folder=f"autofix/incidente_{incidente_id}",
+        resource_type=resource_type
+    )
+
+    url = resultado.get("secure_url")
 
     db_evidencia = Evidencia(
         incidente_id=incidente_id,
@@ -45,6 +63,7 @@ async def subir_evidencia(
     db.refresh(db_evidencia)
 
     return {"url": url, "id": db_evidencia.id}
+
 
 @router.get("/{incidente_id}")
 def listar_evidencias(
