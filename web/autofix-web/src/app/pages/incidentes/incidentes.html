@@ -95,9 +95,34 @@
               <span class="label">Descripción:</span>
               <span>{{ incidenteSeleccionado.descripcion || 'Sin descripción' }}</span>
             </div>
-            <div class="info-row" *ngIf="incidenteSeleccionado.resumen_ia">
-              <span class="label">Resumen IA:</span>
-              <span class="resumen-ia">{{ incidenteSeleccionado.resumen_ia }}</span>
+            <!-- DESPUÉS -->
+            <div class="resumen-ia-section" *ngIf="incidenteSeleccionado.resumen_ia">
+              <h3>Análisis de Inteligencia Artificial</h3>
+              <div class="resumen-bloques">
+                <ng-container *ngFor="let parte of incidenteSeleccionado.resumen_ia.split(' | ')">
+                  <div class="resumen-bloque" *ngIf="parte.startsWith('Descripción:')">
+                    <span class="resumen-icono">📝</span>
+                    <div>
+                      <span class="resumen-label">Descripción</span>
+                      <p class="resumen-texto">{{ parte.replace('Descripción: ', '') }}</p>
+                    </div>
+                  </div>
+                  <div class="resumen-bloque" *ngIf="parte.startsWith('Audio:')">
+                    <span class="resumen-icono">🎤</span>
+                    <div>
+                      <span class="resumen-label">Transcripción de audio</span>
+                      <p class="resumen-texto">{{ parte.replace('Audio: ', '') }}</p>
+                    </div>
+                  </div>
+                  <div class="resumen-bloque" *ngIf="parte.startsWith('Imágenes:')">
+                    <span class="resumen-icono">📸</span>
+                    <div>
+                      <span class="resumen-label">Análisis de imagen</span>
+                      <p class="resumen-texto">{{ parte.replace('Imágenes: ', '') }}</p>
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
             </div>
             <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
               <span class="label">Ubicación:</span>
@@ -114,10 +139,8 @@
           <div class="fotos-section" *ngIf="evidencias.length > 0">
             <h3>Evidencias enviadas</h3>
             <div class="fotos-grid">
-              <img *ngFor="let evidencia of evidencias | filtrarTipo:'imagen'"
-                [src]="evidencia.url"
-                class="foto-evidencia"
-                (click)="abrirFoto(evidencia.url)" />
+              <img *ngFor="let evidencia of evidencias | filtrarTipo:'imagen'" [src]="evidencia.url"
+                class="foto-evidencia" (click)="abrirFoto(evidencia.url)" />
             </div>
             <div *ngFor="let evidencia of evidencias | filtrarTipo:'audio'" class="audio-player">
               <audio controls [src]="evidencia.url"></audio>
