@@ -36,7 +36,7 @@ Responde SOLO en este formato JSON sin bloques de código:
     try:
         cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         respuesta = cliente.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash-lite",
             contents=prompt
         )
         texto = respuesta.text.strip().replace("```json", "").replace("```", "").strip()
@@ -80,7 +80,7 @@ def analizar_imagen(url_imagen: str) -> str:
 
         cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
         respuesta = cliente.models.generate_content(
-            model="gemini-1.5-flash",
+            model="gemini-2.0-flash-lite",
             contents=[
                 types.Part.from_bytes(data=contenido, mime_type=media_type),
                 """Eres un experto en daños vehiculares.
