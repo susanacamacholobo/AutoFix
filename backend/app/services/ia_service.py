@@ -1,7 +1,7 @@
 import os
 import base64
 import httpx
-import anthropic
+import google.generativeai as genai
 from groq import Groq
 from dotenv import load_dotenv
 from sqlalchemy.orm import Session
@@ -10,8 +10,9 @@ from app.models.incidente import Incidente
 
 load_dotenv()
 
-cliente_anthropic = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 cliente_groq = Groq(api_key=os.getenv("GROQ_API_KEY"))
+modelo_gemini = genai.GenerativeModel("gemini-1.5-flash")
 
 
 def descargar_archivo(url: str) -> bytes:
@@ -27,13 +28,8 @@ def analizar_texto(descripcion: str) -> dict:
     if not descripcion:
         return {"tipo": "desconocido", "resumen": ""}
 
-    respuesta = cliente_anthropic.messages.create(
-        model="claude-sonnet-4-20250514",
-        max_tokens=500,
-        messages=[
-            {
-                "role": "user",
-                "content": f"""Eres un asistente especializado en emergencias vehiculares.
+    import json
+    prompt = f"""Eres un asistente especializado en emergencias vehiculares.
 Analiza la siguiente descripción de un incidente vehicular y extrae:
 1. Tipo de problema (batería, llanta, motor, choque, grúa, u otro)
 2. Un resumen breve en 2 oraciones
@@ -42,16 +38,14 @@ Descripción: {descripcion}
 
 Responde SOLO en este formato JSON:
 {{"tipo": "...", "resumen": "..."}}"""
-            }
-        ]
-    )
 
-    import json
-    texto = respuesta.content[0].text.strip()
     try:
+        respuesta = modelo_gemini.generate_content(prompt)
+        texto = respuesta.text.strip().replace("```json", "").replace("```", "").strip()
         return json.loads(texto)
-    except Exception:
-        return {"tipo": "desconocido", "resumen": texto}
+    except Exception as e:
+        print(f"Error analizando texto: {e}")
+        return {"tipo": "desconocido", "resumen": descripcion}
 
 
 def transcribir_audio(url_audio: str) -> str:
@@ -72,7 +66,7 @@ def transcribir_audio(url_audio: str) -> str:
 
 
 def analizar_imagen(url_imagen: str) -> str:
-    """Descarga una imagen desde Cloudinary y la analiza con Claude Vision."""
+    """Descarga una imagen desde Cloudinary y la analiza con Gemini Vision."""
     try:
         contenido = descargar_archivo(url_imagen)
         extension = url_imagen.split(".")[-1].lower().split("?")[0]
@@ -85,34 +79,19 @@ def analizar_imagen(url_imagen: str) -> str:
             "gif": "image/gif"
         }
         media_type = media_types.get(extension, "image/jpeg")
+
         imagen_base64 = base64.standard_b64encode(contenido).decode("utf-8")
 
-        respuesta = cliente_anthropic.messages.create(
-            model="claude-sonnet-4-20250514",
-            max_tokens=300,
-            messages=[
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image",
-                            "source": {
-                                "type": "base64",
-                                "media_type": media_type,
-                                "data": imagen_base64
-                            }
-                        },
-                        {
-                            "type": "text",
-                            "text": """Eres un experto en daños vehiculares.
+        respuesta = modelo_gemini.generate_content([
+            {
+                "mime_type": media_type,
+                "data": imagen_base64
+            },
+            """Eres un experto en daños vehiculares.
 Describe brevemente en 1-2 oraciones qué daños o problemas visibles tiene el vehículo en la imagen.
 Si no hay daños visibles o la imagen no muestra un vehículo, indicalo."""
-                        }
-                    ]
-                }
-            ]
-        )
-        return respuesta.content[0].text.strip()
+        ])
+        return respuesta.text.strip()
     except Exception as e:
         print(f"Error analizando imagen: {e}")
         return ""
