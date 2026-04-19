@@ -367,7 +367,7 @@
 .resumen-ia-section {
   margin-bottom: 20px;
   padding: 16px;
-  background-color: #f8f9ff;
+  background-color: #fff5f5;
   border-radius: 10px;
   border-left: 4px solid #e63946;
 }
@@ -390,12 +390,10 @@
   align-items: flex-start;
   padding: 12px;
   border-radius: 8px;
-  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+  background-color: white;
+  border: 1px solid #f5c6cb;
+  box-shadow: 0 1px 4px rgba(230,57,70,0.06);
 }
-
-.resumen-bloque:nth-child(1) { background-color: #e8f4fd; }
-.resumen-bloque:nth-child(2) { background-color: #e8f8f0; }
-.resumen-bloque:nth-child(3) { background-color: #f3e8fd; }
 
 .resumen-icono {
   font-size: 1.4rem;
@@ -406,15 +404,12 @@
 .resumen-label {
   font-weight: 600;
   font-size: 0.8rem;
+  color: #e63946;
   display: block;
   margin-bottom: 4px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-
-.resumen-bloque:nth-child(1) .resumen-label { color: #1a6fa8; }
-.resumen-bloque:nth-child(2) .resumen-label { color: #1a7a45; }
-.resumen-bloque:nth-child(3) .resumen-label { color: #7b2fa8; }
 
 .resumen-texto {
   font-size: 0.88rem;
