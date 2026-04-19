@@ -367,7 +367,7 @@
 .resumen-ia-section {
   margin-bottom: 20px;
   padding: 16px;
-  background-color: #fff5f5;
+  background-color: #f8f9ff;
   border-radius: 10px;
   border-left: 4px solid #e63946;
 }
@@ -390,9 +390,8 @@
   align-items: flex-start;
   padding: 12px;
   border-radius: 8px;
-  background-color: white;
-  border: 1px solid #f5c6cb;
-  box-shadow: 0 1px 4px rgba(230,57,70,0.06);
+  background: white;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.05);
 }
 
 .resumen-icono {
