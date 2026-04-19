@@ -4,12 +4,10 @@ import httpx
 from groq import Groq
 from google import genai
 from google.genai import types
-from dotenv import load_dotenv
 from sqlalchemy.orm import Session
 from app.models.evidencia import Evidencia
 from app.models.incidente import Incidente
 
-load_dotenv()
 
 
 def get_gemini():
