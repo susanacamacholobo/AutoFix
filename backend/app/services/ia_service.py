@@ -33,7 +33,7 @@ Responde SOLO en este formato JSON sin bloques de código:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
-        cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        cliente = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         respuesta = cliente.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=500,
@@ -51,7 +51,7 @@ def transcribir_audio(url_audio: str) -> str:
     try:
         contenido = descargar_archivo(url_audio)
         nombre_archivo = url_audio.split("/")[-1]
-        cliente = Groq(api_key=os.environ["GROQ_API_KEY"])
+        cliente = Groq(api_key=os.getenv("GROQ_API_KEY"))
         transcripcion = cliente.audio.transcriptions.create(
             file=(nombre_archivo, contenido),
             model="whisper-large-v3",
@@ -79,7 +79,7 @@ def analizar_imagen(url_imagen: str) -> str:
         media_type = media_types.get(extension, "image/jpeg")
         imagen_base64 = base64.standard_b64encode(contenido).decode("utf-8")
 
-        cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        cliente = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
         respuesta = cliente.messages.create(
             model="claude-sonnet-4-20250514",
             max_tokens=300,
