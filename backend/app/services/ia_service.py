@@ -1,9 +1,8 @@
 import os
 import base64
 import httpx
+import anthropic
 from groq import Groq
-from google import genai
-from google.genai import types
 from sqlalchemy.orm import Session
 from app.models.evidencia import Evidencia
 from app.models.incidente import Incidente
@@ -34,12 +33,13 @@ Responde SOLO en este formato JSON sin bloques de código:
 {{"tipo": "...", "resumen": "..."}}"""
 
     try:
-        cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        respuesta = cliente.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=prompt
+        cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        respuesta = cliente.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=500,
+            messages=[{"role": "user", "content": prompt}]
         )
-        texto = respuesta.text.strip().replace("```json", "").replace("```", "").strip()
+        texto = respuesta.content[0].text.strip()
         return json.loads(texto)
     except Exception as e:
         print(f"Error analizando texto: {e}")
@@ -64,7 +64,7 @@ def transcribir_audio(url_audio: str) -> str:
 
 
 def analizar_imagen(url_imagen: str) -> str:
-    """Descarga una imagen desde Cloudinary y la analiza con Gemini Vision."""
+    """Descarga una imagen desde Cloudinary y la analiza con Claude Vision."""
     try:
         contenido = descargar_archivo(url_imagen)
         extension = url_imagen.split(".")[-1].lower().split("?")[0]
@@ -77,18 +77,35 @@ def analizar_imagen(url_imagen: str) -> str:
             "gif": "image/gif"
         }
         media_type = media_types.get(extension, "image/jpeg")
+        imagen_base64 = base64.standard_b64encode(contenido).decode("utf-8")
 
-        cliente = genai.Client(api_key=os.environ["GEMINI_API_KEY"])
-        respuesta = cliente.models.generate_content(
-            model="gemini-2.0-flash-lite",
-            contents=[
-                types.Part.from_bytes(data=contenido, mime_type=media_type),
-                """Eres un experto en daños vehiculares.
+        cliente = anthropic.Anthropic(api_key=os.environ["ANTHROPIC_API_KEY"])
+        respuesta = cliente.messages.create(
+            model="claude-sonnet-4-20250514",
+            max_tokens=300,
+            messages=[
+                {
+                    "role": "user",
+                    "content": [
+                        {
+                            "type": "image",
+                            "source": {
+                                "type": "base64",
+                                "media_type": media_type,
+                                "data": imagen_base64
+                            }
+                        },
+                        {
+                            "type": "text",
+                            "text": """Eres un experto en daños vehiculares.
 Describe brevemente en 1-2 oraciones qué daños o problemas visibles tiene el vehículo en la imagen.
 Si no hay daños visibles o la imagen no muestra un vehículo, indicalo."""
+                        }
+                    ]
+                }
             ]
         )
-        return respuesta.text.strip()
+        return respuesta.content[0].text.strip()
     except Exception as e:
         print(f"Error analizando imagen: {e}")
         return ""
