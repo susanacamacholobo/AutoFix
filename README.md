@@ -44,6 +44,8 @@ AutoFix conecta a conductores con problemas mecánicos con talleres y mecánicos
 ---
 
 ## Estructura del Proyecto
+
+```
 AutoFix/
 ├── web/
 │   └── autofix-web/        # Aplicación web para talleres (Angular)
@@ -58,6 +60,7 @@ AutoFix/
 ├── database/
 │   └── autofix_db.sql      # Script de base de datos PostgreSQL
 └── README.md
+```
 
 ---
 
