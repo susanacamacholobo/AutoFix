@@ -88,6 +88,7 @@ CREATE TABLE incidentes (
     taller_id INTEGER REFERENCES talleres(id),
     tecnico_id INTEGER REFERENCES tecnicos(id),
     descripcion TEXT,
+    resumen_ia TEXT,
     latitud DECIMAL(9,6),
     longitud DECIMAL(9,6),
     tipo VARCHAR(50),
