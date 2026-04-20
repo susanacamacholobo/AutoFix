@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from app.models.incidente import Incidente
 from app.models.historial import Historial
+from app.models.tecnico import Tecnico
 from app.schemas.incidente import IncidenteCreate, IncidenteUpdate
 
 def get_incidentes(db: Session):
@@ -37,8 +38,9 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
         return None
 
     estado_anterior = db_incidente.estado
+    tecnico_anterior_id = db_incidente.tecnico_id
 
-    # Si el taller rechaza, volver a pendiente y guardar en historial
+    # Si el taller rechaza
     if datos.estado == 'rechazado':
         historial = Historial(
             incidente_id=id,
@@ -48,7 +50,6 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
             observacion=f'Taller {taller_id} rechazó la solicitud'
         )
         db.add(historial)
-        # Volver a pendiente para otros talleres
         db_incidente.estado = 'pendiente'
         db_incidente.taller_id = None
         db.commit()
@@ -57,6 +58,27 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
 
     for key, value in datos.model_dump(exclude_unset=True).items():
         setattr(db_incidente, key, value)
+
+    # CU10 - Si se asigna un técnico nuevo, marcarlo como no disponible
+    if datos.tecnico_id and datos.tecnico_id != tecnico_anterior_id:
+        tecnico = db.query(Tecnico).filter(Tecnico.id == datos.tecnico_id).first()
+        if tecnico:
+            tecnico.disponible = False
+            db.add(tecnico)
+
+        # Si había un técnico anterior, liberarlo
+        if tecnico_anterior_id:
+            tecnico_anterior = db.query(Tecnico).filter(Tecnico.id == tecnico_anterior_id).first()
+            if tecnico_anterior:
+                tecnico_anterior.disponible = True
+                db.add(tecnico_anterior)
+
+    # CU10 - Si el incidente se marca como atendido, liberar al técnico
+    if datos.estado == 'atendido' and db_incidente.tecnico_id:
+        tecnico = db.query(Tecnico).filter(Tecnico.id == db_incidente.tecnico_id).first()
+        if tecnico:
+            tecnico.disponible = True
+            db.add(tecnico)
 
     # Guardar historial si cambia el estado
     if datos.estado and datos.estado != estado_anterior:
