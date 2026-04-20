@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, AfterViewInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
@@ -13,7 +13,7 @@ import { HttpClient } from '@angular/common/http';
   templateUrl: './registro-taller.html',
   styleUrl: './registro-taller.css'
 })
-export class RegistroTallerComponent {
+export class RegistroTallerComponent implements AfterViewInit {
 
   paso: number = 1;
   error: string = '';
@@ -22,7 +22,6 @@ export class RegistroTallerComponent {
   mostrarContrasena: boolean = false;
   tallerCreado: any = null;
   ubicacionTexto: string = '';
-  cargandoUbicacion: boolean = false;
 
   taller = {
     nombre: '',
@@ -49,6 +48,40 @@ export class RegistroTallerComponent {
     private http: HttpClient,
     private router: Router
   ) { }
+
+  ngAfterViewInit(): void {
+    this.iniciarMapa();
+  }
+
+  iniciarMapa(): void {
+    setTimeout(() => {
+      const mapaEl = document.getElementById('mapa-taller');
+      if (!mapaEl) return;
+
+      const mapa = new (window as any).google.maps.Map(mapaEl, {
+        center: { lat: -17.7833, lng: -63.1821 },
+        zoom: 13
+      });
+
+      let marcador: any = null;
+
+      mapa.addListener('click', (event: any) => {
+        const lat = event.latLng.lat();
+        const lng = event.latLng.lng();
+
+        if (marcador) marcador.setMap(null);
+
+        marcador = new (window as any).google.maps.Marker({
+          position: { lat, lng },
+          map: mapa
+        });
+
+        this.taller.latitud = lat;
+        this.taller.longitud = lng;
+        this.ubicacionTexto = `Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)}`;
+      });
+    }, 500);
+  }
 
   toggleContrasena(): void {
     this.mostrarContrasena = !this.mostrarContrasena;
@@ -95,7 +128,6 @@ export class RegistroTallerComponent {
       next: (tallerCreado) => {
         this.tallerCreado = tallerCreado;
 
-        // Login automático
         const body = new URLSearchParams();
         body.set('username', this.taller.email);
         body.set('password', this.taller.contrasena);
@@ -106,7 +138,6 @@ export class RegistroTallerComponent {
           next: (respuesta) => {
             this.authService.guardarToken(respuesta.access_token);
 
-            // Crear técnico
             const tecnicoPayload = {
               taller_id: tallerCreado.id,
               nombre: this.tecnico.nombre,
@@ -139,31 +170,5 @@ export class RegistroTallerComponent {
         this.cargando = false;
       }
     });
-  }
-
-  obtenerUbicacion(): void {
-    this.cargandoUbicacion = true;
-    if (!navigator.geolocation) {
-      this.error = 'Tu navegador no soporta geolocalización';
-      this.cargandoUbicacion = false;
-      return;
-    }
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        this.taller.latitud = position.coords.latitude;
-        this.taller.longitud = position.coords.longitude;
-        this.ubicacionTexto = `Lat: ${position.coords.latitude.toFixed(4)}, Lng: ${position.coords.longitude.toFixed(4)}`;
-        this.cargandoUbicacion = false;
-      },
-      () => {
-        this.error = 'No se pudo obtener la ubicación';
-        this.cargandoUbicacion = false;
-      },
-      {
-        timeout: 10000,
-        maximumAge: 0,
-        enableHighAccuracy: false
-      }
-    );
   }
 }
