@@ -174,10 +174,15 @@ def analizar_incidente(db: Session, incidente_id: int):
     db.commit()
     db.refresh(incidente)
 
+    # CU08 - Asignar taller más cercano automáticamente
+    from app.services import asignacion_service
+    taller_asignado = asignacion_service.asignar_taller_cercano(db, incidente_id)
+
     return {
         "resumen": resumen_final,
         "tipo_detectado": tipo_detectado,
         "prioridad_asignada": prioridad_asignada,
+        "taller_asignado": taller_asignado.nombre if taller_asignado else None,
         "transcripciones": transcripciones,
         "analisis_imagenes": analisis_imagenes
     }

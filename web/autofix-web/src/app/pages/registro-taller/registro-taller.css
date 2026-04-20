@@ -182,3 +182,38 @@
   background-color: #ccc;
   cursor: not-allowed;
 }
+
+.btn-ubicacion {
+  width: 100%;
+  padding: 10px;
+  background: white;
+  border: 2px solid #e63946;
+  color: #e63946;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 8px;
+}
+
+.btn-ubicacion:hover {
+  background: #fff0f0;
+}
+
+.btn-ubicacion:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.ubicacion-box {
+  background: #d4edda;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+}
+
+.ubicacion-texto {
+  color: #155724;
+  font-size: 0.85rem;
+}

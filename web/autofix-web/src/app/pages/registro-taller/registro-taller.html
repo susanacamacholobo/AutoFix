@@ -37,6 +37,17 @@
         </div>
 
         <div class="form-group">
+          <label>Ubicación del taller</label>
+          <div class="ubicacion-box" *ngIf="ubicacionTexto">
+            <span class="ubicacion-texto">📍 {{ ubicacionTexto }}</span>
+          </div>
+          <button type="button" class="btn-ubicacion" (click)="obtenerUbicacion()" [disabled]="cargandoUbicacion">
+            {{ cargandoUbicacion ? 'Obteniendo ubicación...' : ubicacionTexto ? 'Actualizar ubicación' : '📍 Obtener mi
+            ubicación' }}
+          </button>
+        </div>
+
+        <div class="form-group">
           <label>Especialidad</label>
           <input type="text" [(ngModel)]="taller.especialidad" placeholder="Mecánica general, eléctrico, etc." />
         </div>
@@ -44,11 +55,8 @@
         <div class="form-group">
           <label>Contraseña *</label>
           <div class="input-password">
-            <input
-              [type]="mostrarContrasena ? 'text' : 'password'"
-              [(ngModel)]="taller.contrasena"
-              placeholder="••••••••"
-            />
+            <input [type]="mostrarContrasena ? 'text' : 'password'" [(ngModel)]="taller.contrasena"
+              placeholder="••••••••" />
             <button class="btn-ojo" (click)="toggleContrasena()" type="button">
               <span class="material-icons">
                 {{ mostrarContrasena ? 'visibility' : 'visibility_off' }}
@@ -59,11 +67,8 @@
 
         <div class="form-group">
           <label>Confirmar Contraseña *</label>
-          <input
-            [type]="mostrarContrasena ? 'text' : 'password'"
-            [(ngModel)]="taller.confirmar_contrasena"
-            placeholder="••••••••"
-          />
+          <input [type]="mostrarContrasena ? 'text' : 'password'" [(ngModel)]="taller.confirmar_contrasena"
+            placeholder="••••••••" />
         </div>
 
         <div class="error-message" *ngIf="error">{{ error }}</div>

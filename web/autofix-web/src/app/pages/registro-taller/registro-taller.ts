@@ -21,6 +21,8 @@ export class RegistroTallerComponent {
   cargando: boolean = false;
   mostrarContrasena: boolean = false;
   tallerCreado: any = null;
+  ubicacionTexto: string = '';
+  cargandoUbicacion: boolean = false;
 
   taller = {
     nombre: '',
@@ -28,6 +30,8 @@ export class RegistroTallerComponent {
     telefono: '',
     direccion: '',
     especialidad: '',
+    latitud: null as number | null,
+    longitud: null as number | null,
     contrasena: '',
     confirmar_contrasena: ''
   };
@@ -44,7 +48,7 @@ export class RegistroTallerComponent {
     private authService: AuthService,
     private http: HttpClient,
     private router: Router
-  ) {}
+  ) { }
 
   toggleContrasena(): void {
     this.mostrarContrasena = !this.mostrarContrasena;
@@ -82,6 +86,8 @@ export class RegistroTallerComponent {
       telefono: this.taller.telefono,
       direccion: this.taller.direccion,
       especialidad: this.taller.especialidad,
+      latitud: this.taller.latitud,
+      longitud: this.taller.longitud,
       contrasena: this.taller.contrasena
     };
 
@@ -133,5 +139,26 @@ export class RegistroTallerComponent {
         this.cargando = false;
       }
     });
+  }
+
+  obtenerUbicacion(): void {
+    this.cargandoUbicacion = true;
+    if (!navigator.geolocation) {
+      this.error = 'Tu navegador no soporta geolocalización';
+      this.cargandoUbicacion = false;
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        this.taller.latitud = position.coords.latitude;
+        this.taller.longitud = position.coords.longitude;
+        this.ubicacionTexto = `Lat: ${position.coords.latitude.toFixed(4)}, Lng: ${position.coords.longitude.toFixed(4)}`;
+        this.cargandoUbicacion = false;
+      },
+      () => {
+        this.error = 'No se pudo obtener la ubicación';
+        this.cargandoUbicacion = false;
+      }
+    );
   }
 }
