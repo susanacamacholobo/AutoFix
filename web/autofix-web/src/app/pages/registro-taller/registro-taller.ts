@@ -158,6 +158,11 @@ export class RegistroTallerComponent {
       () => {
         this.error = 'No se pudo obtener la ubicación';
         this.cargandoUbicacion = false;
+      },
+      {
+        timeout: 10000,
+        maximumAge: 0,
+        enableHighAccuracy: false
       }
     );
   }
