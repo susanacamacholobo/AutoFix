@@ -95,7 +95,20 @@
               <span class="label">Descripción:</span>
               <span>{{ incidenteSeleccionado.descripcion || 'Sin descripción' }}</span>
             </div>
-            <!-- DESPUÉS -->
+            <div class="info-row" *ngIf="incidenteSeleccionado.tecnico_id">
+              <span class="label">Técnico:</span>
+              <span>👨‍🔧 {{ obtenerNombreTecnico(incidenteSeleccionado.tecnico_id) }}</span>
+            </div>
+            <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
+              <span class="label">Ubicación:</span>
+              <a [href]="'https://maps.google.com/?q=' + incidenteSeleccionado.latitud + ',' + incidenteSeleccionado.longitud"
+                target="_blank" class="link-mapa">Ver en mapa 🗺️</a>
+            </div>
+            <div class="info-row">
+              <span class="label">Fecha:</span>
+              <span>{{ incidenteSeleccionado.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</span>
+            </div>
+            <!-- Resumen IA -->
             <div class="resumen-ia-section" *ngIf="incidenteSeleccionado.resumen_ia">
               <h3>Análisis de Inteligencia Artificial</h3>
               <div class="resumen-bloques">
@@ -123,15 +136,6 @@
                   </div>
                 </ng-container>
               </div>
-            </div>
-            <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
-              <span class="label">Ubicación:</span>
-              <a [href]="'https://maps.google.com/?q=' + incidenteSeleccionado.latitud + ',' + incidenteSeleccionado.longitud"
-                target="_blank" class="link-mapa">Ver en mapa 🗺️</a>
-            </div>
-            <div class="info-row">
-              <span class="label">Fecha:</span>
-              <span>{{ incidenteSeleccionado.fecha_creacion | date:'dd/MM/yyyy HH:mm' }}</span>
             </div>
           </div>
 

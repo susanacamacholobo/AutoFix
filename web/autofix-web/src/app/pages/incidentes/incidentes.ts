@@ -19,6 +19,7 @@ export class IncidentesComponent implements OnInit {
   incidentes: any[] = [];
   tallerId: number = 0;
   tecnicos: any[] = [];
+  todosLosTecnicos: any[] = [];
   incidenteSeleccionado: any = null;
   error: string = '';
   exito: string = '';
@@ -32,7 +33,7 @@ export class IncidentesComponent implements OnInit {
     private authService: AuthService,
     private http: HttpClient,
     private cdr: ChangeDetectorRef
-  ) {}
+  ) { }
 
   ngOnInit(): void {
     this.obtenerTaller();
@@ -45,8 +46,11 @@ export class IncidentesComponent implements OnInit {
       next: (taller) => {
         this.tallerId = taller.id;
         this.talleresService.listarTecnicos(taller.id).subscribe({
-          next: (tecnicos) => this.tecnicos = tecnicos.filter((t: any) => t.activo && t.disponible),
-          error: () => {}
+          next: (tecnicos) => {
+            this.todosLosTecnicos = tecnicos.filter((t: any) => t.activo);
+            this.tecnicos = tecnicos.filter((t: any) => t.activo && t.disponible);
+          },
+          error: () => { }
         });
         this.cargarIncidentes();
         this.cargarRechazos();
@@ -58,8 +62,8 @@ export class IncidentesComponent implements OnInit {
   cargarIncidentes(): void {
     this.incidentesService.listarTodos().subscribe({
       next: (incidentes) => {
-        this.incidentes = incidentes.filter((i: any) => 
-          i.estado === 'pendiente' || 
+        this.incidentes = incidentes.filter((i: any) =>
+          i.estado === 'pendiente' ||
           i.taller_id === this.tallerId
         );
         this.cdr.detectChanges();
@@ -81,7 +85,7 @@ export class IncidentesComponent implements OnInit {
         this.evidencias = evidencias;
         this.cdr.detectChanges();
       },
-      error: () => {}
+      error: () => { }
     });
   }
 
@@ -140,7 +144,7 @@ export class IncidentesComponent implements OnInit {
   }
 
   getBadgeClass(estado: string): string {
-    switch(estado) {
+    switch (estado) {
       case 'pendiente': return 'badge-warning';
       case 'en_proceso': return 'badge-info';
       case 'atendido': return 'badge-success';
@@ -150,7 +154,7 @@ export class IncidentesComponent implements OnInit {
   }
 
   getPrioridadClass(prioridad: string): string {
-    switch(prioridad) {
+    switch (prioridad) {
       case 'alta': return 'prioridad-alta';
       case 'media': return 'prioridad-media';
       case 'baja': return 'prioridad-baja';
@@ -169,13 +173,17 @@ export class IncidentesComponent implements OnInit {
         this.rechazos = rechazos;
         this.cdr.detectChanges();
       },
-      error: (err) => {
-      }
+      error: (err) => { }
     });
   }
 
   cambiarFiltro(filtro: string): void {
     this.filtro = filtro;
     this.cdr.detectChanges();
+  }
+
+  obtenerNombreTecnico(tecnicoId: number): string {
+    const tecnico = this.todosLosTecnicos.find(t => t.id === tecnicoId);
+    return tecnico ? `${tecnico.nombre} ${tecnico.apellido}` : 'Técnico asignado';
   }
 }
