@@ -97,7 +97,7 @@
             </div>
             <div class="info-row" *ngIf="incidenteSeleccionado.tecnico_id">
               <span class="label">Técnico:</span>
-              <span>👨‍🔧 {{ obtenerNombreTecnico(incidenteSeleccionado.tecnico_id) }}</span>
+              <span>{{ obtenerNombreTecnico(incidenteSeleccionado.tecnico_id) }}</span>
             </div>
             <div class="info-row" *ngIf="incidenteSeleccionado.latitud">
               <span class="label">Ubicación:</span>
