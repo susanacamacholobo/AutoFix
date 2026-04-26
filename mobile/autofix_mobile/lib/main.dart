@@ -1,12 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard_screen.dart';
-import 'screens/roles_screen.dart';
-import 'screens/permisos_screen.dart';
 import 'screens/registro_screen.dart';
-import 'screens/registro_taller_screen.dart';
 import 'screens/mis_vehiculos_screen.dart';
-import 'screens/mis_tecnicos_screen.dart';
 import 'screens/reportar_emergencia_screen.dart';
 import 'screens/mis_incidentes_screen.dart';
 
@@ -32,7 +28,6 @@ class AutoFixApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/registro': (context) => const RegistroScreen(),
-        '/registro-taller': (context) => const RegistroTallerScreen(),
       },
       onGenerateRoute: (settings) {
         if (settings.name == '/dashboard') {
@@ -41,28 +36,10 @@ class AutoFixApp extends StatelessWidget {
             builder: (context) => DashboardScreen(token: token),
           );
         }
-        if (settings.name == '/roles') {
-          final token = settings.arguments as String;
-          return MaterialPageRoute(
-            builder: (context) => RolesScreen(token: token),
-          );
-        }
-        if (settings.name == '/permisos') {
-          final token = settings.arguments as String;
-          return MaterialPageRoute(
-            builder: (context) => PermisosScreen(token: token),
-          );
-        }
         if (settings.name == '/mis-vehiculos') {
           final token = settings.arguments as String;
           return MaterialPageRoute(
             builder: (context) => MisVehiculosScreen(token: token),
-          );
-        }
-        if (settings.name == '/mis-tecnicos') {
-          final token = settings.arguments as String;
-          return MaterialPageRoute(
-            builder: (context) => MisTecnicosScreen(token: token),
           );
         }
         if (settings.name == '/reportar-emergencia') {

@@ -16,7 +16,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
   final _vehiculosService = VehiculosService();
 
   int _paso = 1;
-  String _tipoUsuario = '';
   bool _mostrarContrasena = false;
   bool _cargando = false;
   String _error = '';
@@ -34,17 +33,12 @@ class _RegistroScreenState extends State<RegistroScreen> {
   final _placaController = TextEditingController();
   final _colorController = TextEditingController();
 
-  void _seleccionarTipo(String tipo) {
-    setState(() {
-      _tipoUsuario = tipo;
-      _paso = 2;
-    });
-  }
-
   void _siguientePaso() {
     setState(() => _error = '');
-    if (_nombreController.text.isEmpty || _apellidoController.text.isEmpty ||
-        _emailController.text.isEmpty || _contrasenaController.text.isEmpty) {
+    if (_nombreController.text.isEmpty ||
+        _apellidoController.text.isEmpty ||
+        _emailController.text.isEmpty ||
+        _contrasenaController.text.isEmpty) {
       setState(() => _error = 'Por favor completa todos los campos obligatorios');
       return;
     }
@@ -56,12 +50,14 @@ class _RegistroScreenState extends State<RegistroScreen> {
       setState(() => _error = 'La contraseña debe tener al menos 6 caracteres');
       return;
     }
-    setState(() => _paso = 3);
+    setState(() => _paso = 2);
   }
 
   Future<void> _registrarse() async {
     setState(() => _error = '');
-    if (_marcaController.text.isEmpty || _modeloController.text.isEmpty || _placaController.text.isEmpty) {
+    if (_marcaController.text.isEmpty ||
+        _modeloController.text.isEmpty ||
+        _placaController.text.isEmpty) {
       setState(() => _error = 'Por favor completa los campos obligatorios del vehículo');
       return;
     }
@@ -69,7 +65,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
     setState(() => _cargando = true);
 
     try {
-      // Registrar usuario
       final response = await http.post(
         Uri.parse('https://autofix-production-0c6c.up.railway.app/usuarios/registro'),
         headers: {'Content-Type': 'application/json'},
@@ -93,7 +88,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
       final usuario = jsonDecode(response.body);
 
-      // Login automático
       final loginRespuesta = await _authService.login(
         _emailController.text,
         _contrasenaController.text,
@@ -101,7 +95,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
       final token = loginRespuesta['access_token'];
 
-      // Registrar vehículo
       await _vehiculosService.crearVehiculo(token, {
         'marca': _marcaController.text,
         'modelo': _modeloController.text,
@@ -113,7 +106,6 @@ class _RegistroScreenState extends State<RegistroScreen> {
 
       setState(() => _cargando = false);
       Navigator.pushReplacementNamed(context, '/dashboard', arguments: token);
-
     } catch (e) {
       setState(() {
         _error = 'Error al crear la cuenta';
@@ -129,17 +121,22 @@ class _RegistroScreenState extends State<RegistroScreen> {
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Header
             Container(
               width: double.infinity,
               padding: const EdgeInsets.fromLTRB(24, 60, 24, 24),
               color: const Color(0xFFE63946),
               child: Column(
                 children: [
-                  const Text('AutoFix', style: TextStyle(color: Colors.white, fontSize: 32, fontWeight: FontWeight.w800, letterSpacing: 2)),
+                  const Text('AutoFix',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 32,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      )),
                   const SizedBox(height: 8),
                   Text(
-                    _paso == 1 ? '¿Cómo quieres usar AutoFix?' : _paso == 2 ? 'Datos personales' : 'Tu vehículo',
+                    _paso == 1 ? 'Datos personales' : 'Tu vehículo',
                     style: const TextStyle(color: Colors.white, fontSize: 14),
                   ),
                 ],
@@ -152,82 +149,21 @@ class _RegistroScreenState extends State<RegistroScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
 
-                  // PASO 1
+                  // PASO 1 — Datos personales
                   if (_paso == 1) ...[
-                    const Text('Crear cuenta', style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-                    const SizedBox(height: 4),
-                    const Text('Selecciona cómo vas a usar la plataforma', style: TextStyle(color: Colors.grey)),
-                    const SizedBox(height: 24),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => _seleccionarTipo('conductor'),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: const Color(0xFFE63946), width: 2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Column(
-                                children: [
-                                  Text('🚗', style: TextStyle(fontSize: 32)),
-                                  SizedBox(height: 8),
-                                  Text('Soy Conductor', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 4),
-                                  Text('Necesito asistencia mecánica', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Expanded(
-                          child: GestureDetector(
-                            onTap: () => Navigator.pushReplacementNamed(context, '/registro-taller'),
-                            child: Container(
-                              padding: const EdgeInsets.all(20),
-                              decoration: BoxDecoration(
-                                border: Border.all(color: const Color(0xFFE63946), width: 2),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: const Column(
-                                children: [
-                                  Text('🔧', style: TextStyle(fontSize: 32)),
-                                  SizedBox(height: 8),
-                                  Text('Tengo un Taller', style: TextStyle(fontWeight: FontWeight.bold)),
-                                  SizedBox(height: 4),
-                                  Text('Quiero ofrecer servicios', style: TextStyle(fontSize: 11, color: Colors.grey), textAlign: TextAlign.center),
-                                ],
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 24),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        const Text('¿Ya tienes cuenta? ', style: TextStyle(color: Colors.grey)),
-                        GestureDetector(
-                          onTap: () => Navigator.pushReplacementNamed(context, '/login'),
-                          child: const Text('Inicia sesión', style: TextStyle(color: Color(0xFFE63946), fontWeight: FontWeight.bold)),
-                        ),
-                      ],
-                    ),
-                  ],
-
-                  // PASO 2
-                  if (_paso == 2) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextButton(onPressed: () => setState(() => _paso = 1), child: const Text('← Volver', style: TextStyle(color: Color(0xFFE63946)))),
+                        TextButton(
+                          onPressed: () => Navigator.pushReplacementNamed(context, '/login'),
+                          child: const Text('← Volver',
+                              style: TextStyle(color: Color(0xFFE63946))),
+                        ),
                         const Text('Paso 1 de 2', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
-                    const Text('Tus datos personales', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Tus datos personales',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -243,20 +179,39 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     if (_error.isNotEmpty) _buildError(),
                     const SizedBox(height: 8),
                     _buildButton('Siguiente → Registrar Vehículo', _siguientePaso),
+                    const SizedBox(height: 16),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        const Text('¿Ya tienes cuenta? ', style: TextStyle(color: Colors.grey)),
+                        GestureDetector(
+                          onTap: () => Navigator.pushReplacementNamed(context, '/login'),
+                          child: const Text('Inicia sesión',
+                              style: TextStyle(
+                                  color: Color(0xFFE63946), fontWeight: FontWeight.bold)),
+                        ),
+                      ],
+                    ),
                   ],
 
-                  // PASO 3
-                  if (_paso == 3) ...[
+                  // PASO 2 — Vehículo
+                  if (_paso == 2) ...[
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        TextButton(onPressed: () => setState(() => _paso = 2), child: const Text('← Volver', style: TextStyle(color: Color(0xFFE63946)))),
+                        TextButton(
+                          onPressed: () => setState(() => _paso = 1),
+                          child: const Text('← Volver',
+                              style: TextStyle(color: Color(0xFFE63946))),
+                        ),
                         const Text('Paso 2 de 2', style: TextStyle(color: Colors.grey)),
                       ],
                     ),
-                    const Text('Tu vehículo', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                    const Text('Tu vehículo',
+                        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                     const SizedBox(height: 4),
-                    const Text('Agrega al menos un vehículo para continuar', style: TextStyle(color: Colors.grey, fontSize: 13)),
+                    const Text('Agrega al menos un vehículo para continuar',
+                        style: TextStyle(color: Colors.grey, fontSize: 13)),
                     const SizedBox(height: 16),
                     Row(
                       children: [
@@ -275,7 +230,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
                     _buildInput(_colorController, 'Color'),
                     if (_error.isNotEmpty) _buildError(),
                     const SizedBox(height: 8),
-                    _buildButton(_cargando ? 'Creando cuenta...' : 'Crear Cuenta', _cargando ? null : _registrarse),
+                    _buildButton(
+                      _cargando ? 'Creando cuenta...' : 'Crear Cuenta',
+                      _cargando ? null : _registrarse,
+                    ),
                   ],
                 ],
               ),
@@ -286,13 +244,16 @@ class _RegistroScreenState extends State<RegistroScreen> {
     );
   }
 
-  Widget _buildInput(TextEditingController controller, String label, {TextInputType type = TextInputType.text, bool obscure = false}) {
+  Widget _buildInput(TextEditingController controller, String label,
+      {TextInputType type = TextInputType.text, bool obscure = false}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF555555))),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF555555))),
           const SizedBox(height: 6),
           TextField(
             controller: controller,
@@ -300,7 +261,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
             obscureText: obscure,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE63946))),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE63946))),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
             ),
           ),
@@ -315,17 +278,23 @@ class _RegistroScreenState extends State<RegistroScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(label, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF555555))),
+          Text(label,
+              style: const TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w500, color: Color(0xFF555555))),
           const SizedBox(height: 6),
           TextField(
             controller: controller,
             obscureText: !_mostrarContrasena,
             decoration: InputDecoration(
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-              focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: const BorderSide(color: Color(0xFFE63946))),
+              focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: const BorderSide(color: Color(0xFFE63946))),
               contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 12),
               suffixIcon: IconButton(
-                icon: Icon(_mostrarContrasena ? Icons.visibility : Icons.visibility_off, color: const Color(0xFFE63946)),
+                icon: Icon(
+                    _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
+                    color: const Color(0xFFE63946)),
                 onPressed: () => setState(() => _mostrarContrasena = !_mostrarContrasena),
               ),
             ),
@@ -345,7 +314,9 @@ class _RegistroScreenState extends State<RegistroScreen> {
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
         ),
-        child: Text(texto, style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
+        child: Text(texto,
+            style: const TextStyle(
+                color: Colors.white, fontSize: 16, fontWeight: FontWeight.w600)),
       ),
     );
   }
@@ -355,8 +326,10 @@ class _RegistroScreenState extends State<RegistroScreen> {
       width: double.infinity,
       padding: const EdgeInsets.all(10),
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(8)),
-      child: Text(_error, style: const TextStyle(color: Color(0xFFE63946)), textAlign: TextAlign.center),
+      decoration: BoxDecoration(
+          color: const Color(0xFFFFF0F0), borderRadius: BorderRadius.circular(8)),
+      child: Text(_error,
+          style: const TextStyle(color: Color(0xFFE63946)), textAlign: TextAlign.center),
     );
   }
 }

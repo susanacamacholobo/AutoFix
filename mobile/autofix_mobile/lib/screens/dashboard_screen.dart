@@ -12,15 +12,13 @@ class DashboardScreen extends StatefulWidget {
 }
 
 class _DashboardScreenState extends State<DashboardScreen> {
-  String _rol = '';
   String _email = '';
   String _nombre = '';
   dynamic _incidenteActivo;
   Timer? _timer;
   Map<int, Map<String, dynamic>> _tiemposEstimados = {};
 
-  static const String baseUrl =
-      'https://autofix-production-0c6c.up.railway.app';
+  static const String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
 
   @override
   void initState() {
@@ -47,17 +45,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       final data = jsonDecode(payload);
       setState(() {
-        _rol = (data['rol'] ?? '').toString().toLowerCase();
         _email = data['sub'] ?? '';
         _nombre = data['nombre'] ?? _email;
       });
-    } catch (e) {
-      _rol = '';
-    }
+    } catch (e) {}
   }
 
   Future<void> _cargarIncidenteActivo() async {
-    if (_rol != 'conductor') return;
     try {
       final response = await http.get(
         Uri.parse('$baseUrl/incidentes/mis-incidentes'),
@@ -66,15 +60,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (response.statusCode == 200) {
         final incidentes = jsonDecode(response.body) as List;
         final activos = incidentes
-            .where(
-              (i) => i['estado'] != 'atendido' && i['estado'] != 'rechazado',
-            )
+            .where((i) => i['estado'] != 'atendido' && i['estado'] != 'rechazado')
             .toList();
         setState(() {
           _incidenteActivo = activos.isNotEmpty ? activos.last : null;
         });
-        if (_incidenteActivo != null &&
-            _incidenteActivo['tecnico_id'] != null) {
+        if (_incidenteActivo != null && _incidenteActivo['tecnico_id'] != null) {
           _cargarTiempoEstimado(_incidenteActivo['id']);
         }
       }
@@ -104,19 +95,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _getTipoEmoji(String? tipo) {
     switch (tipo) {
       case 'bateria':
-      case 'batería':
-        return '🔋';
-      case 'llanta':
-        return '🔧';
+      case 'batería': return '🔋';
+      case 'llanta': return '🔧';
       case 'grua':
-      case 'grúa':
-        return '🚗';
-      case 'choque':
-        return '💥';
-      case 'motor':
-        return '⚙️';
-      default:
-        return '🚨';
+      case 'grúa': return '🚗';
+      case 'choque': return '💥';
+      case 'motor': return '⚙️';
+      default: return '🚨';
     }
   }
 
@@ -147,7 +132,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
         'label': atendido ? 'Llegó' : 'En camino',
         'completado': tieneTecnico,
       },
-      {'icono': '✅', 'label': 'Listo', 'completado': atendido},
+      {
+        'icono': '✅',
+        'label': 'Listo',
+        'completado': atendido,
+      },
     ];
   }
 
@@ -185,20 +174,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final pasos = _getPasosHorizontal(incidente);
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(
-        context,
-        '/mis-incidentes',
-        arguments: widget.token,
-      ),
+      onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12),
-          ],
+          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12)],
           border: Border.all(color: const Color(0xFFE63946).withOpacity(0.2)),
         ),
         child: Column(
@@ -206,38 +189,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Row(
               children: [
-                Text(
-                  _getTipoEmoji(incidente['tipo']),
-                  style: const TextStyle(fontSize: 20),
-                ),
+                Text(_getTipoEmoji(incidente['tipo']), style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    titulo,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
-                    ),
-                  ),
+                  child: Text(titulo,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
                 const Icon(Icons.chevron_right, color: Color(0xFFE63946)),
               ],
             ),
             const SizedBox(height: 12),
-
             Row(
               children: List.generate(pasos.length * 2 - 1, (index) {
                 if (index.isOdd) {
                   final pasoIndex = index ~/ 2;
-                  final completado =
-                      pasos[pasoIndex]['completado'] as bool &&
+                  final completado = pasos[pasoIndex]['completado'] as bool &&
                       pasos[pasoIndex + 1]['completado'] as bool;
                   return Expanded(
                     child: Container(
                       height: 2,
-                      color: completado
-                          ? const Color(0xFFE63946)
-                          : Colors.grey.shade300,
+                      color: completado ? const Color(0xFFE63946) : Colors.grey.shade300,
                     ),
                   );
                 } else {
@@ -247,19 +218,14 @@ class _DashboardScreenState extends State<DashboardScreen> {
                   return Column(
                     children: [
                       Container(
-                        width: 32,
-                        height: 32,
+                        width: 32, height: 32,
                         decoration: BoxDecoration(
-                          color: completado
-                              ? const Color(0xFFE63946)
-                              : Colors.grey.shade200,
+                          color: completado ? const Color(0xFFE63946) : Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
-                          child: Text(
-                            paso['icono'] as String,
-                            style: const TextStyle(fontSize: 14),
-                          ),
+                          child: Text(paso['icono'] as String,
+                              style: const TextStyle(fontSize: 14)),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -267,12 +233,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         paso['label'] as String,
                         style: TextStyle(
                           fontSize: 9,
-                          color: completado
-                              ? const Color(0xFFE63946)
-                              : Colors.grey,
-                          fontWeight: completado
-                              ? FontWeight.bold
-                              : FontWeight.normal,
+                          color: completado ? const Color(0xFFE63946) : Colors.grey,
+                          fontWeight: completado ? FontWeight.bold : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -280,16 +242,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
               }),
             ),
-
             const SizedBox(height: 10),
-
             Text(
               subtitulo,
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey.shade600,
-                fontStyle: FontStyle.italic,
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey.shade600, fontStyle: FontStyle.italic),
             ),
           ],
         ),
@@ -306,36 +262,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         foregroundColor: Colors.white,
         automaticallyImplyLeading: false,
         actions: [
-          if (_rol == 'conductor' || _rol == 'administrador')
-            IconButton(
-              icon: const Icon(Icons.directions_car),
-              tooltip: 'Mis Vehículos',
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/mis-vehiculos',
-                arguments: widget.token,
-              ),
-            ),
-          if (_rol == 'taller' || _rol == 'administrador')
-            IconButton(
-              icon: const Icon(Icons.engineering),
-              tooltip: 'Mis Técnicos',
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/mis-tecnicos',
-                arguments: widget.token,
-              ),
-            ),
-          if (_rol == 'administrador')
-            IconButton(
-              icon: const Icon(Icons.manage_accounts),
-              tooltip: 'Gestionar Roles',
-              onPressed: () => Navigator.pushNamed(
-                context,
-                '/roles',
-                arguments: widget.token,
-              ),
-            ),
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
@@ -343,180 +269,106 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: _rol == 'conductor'
-          ? _buildConductorDashboard()
-          : _buildDefaultDashboard(),
-    );
-  }
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('¡Hola, $_nombre!',
+                style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 4),
+            Text(_email, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+            const SizedBox(height: 24),
 
-  Widget _buildConductorDashboard() {
-    return SingleChildScrollView(
-      padding: const EdgeInsets.all(24),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            '¡Hola, $_nombre!',
-            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            _email,
-            style: const TextStyle(color: Colors.grey, fontSize: 14),
-          ),
-          const SizedBox(height: 24),
+            if (_incidenteActivo != null)
+              _buildLineaTiempoHorizontal(_incidenteActivo),
 
-          if (_incidenteActivo != null)
-            _buildLineaTiempoHorizontal(_incidenteActivo),
-
-          GestureDetector(
-            onTap: () => Navigator.pushNamed(
-              context,
-              '/reportar-emergencia',
-              arguments: widget.token,
-            ),
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.all(24),
-              decoration: BoxDecoration(
-                color: const Color(0xFFE63946),
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFFE63946).withOpacity(0.4),
-                    blurRadius: 20,
-                    offset: const Offset(0, 8),
-                  ),
-                ],
-              ),
-              child: const Column(
-                children: [
-                  Text('🚨', style: TextStyle(fontSize: 48)),
-                  SizedBox(height: 12),
-                  Text(
-                    'REPORTAR EMERGENCIA',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 20,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
+            GestureDetector(
+              onTap: () => Navigator.pushNamed(context, '/reportar-emergencia', arguments: widget.token),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFE63946),
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFE63946).withOpacity(0.4),
+                      blurRadius: 20,
+                      offset: const Offset(0, 8),
                     ),
-                  ),
-                  SizedBox(height: 4),
-                  Text(
-                    'Toca aquí si necesitas ayuda mecánica',
-                    style: TextStyle(color: Colors.white70, fontSize: 13),
-                  ),
-                ],
+                  ],
+                ),
+                child: const Column(
+                  children: [
+                    Text('🚨', style: TextStyle(fontSize: 48)),
+                    SizedBox(height: 12),
+                    Text('REPORTAR EMERGENCIA',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 1,
+                        )),
+                    SizedBox(height: 4),
+                    Text('Toca aquí si necesitas ayuda mecánica',
+                        style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  ],
+                ),
               ),
             ),
-          ),
 
-          const SizedBox(height: 24),
+            const SizedBox(height: 24),
 
-          Row(
-            children: [
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    '/mis-vehiculos',
-                    arguments: widget.token,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: const Column(
-                      children: [
-                        Text('🚗', style: TextStyle(fontSize: 28)),
-                        SizedBox(height: 8),
-                        Text(
-                          'Mis Vehículos',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      ),
+                      child: const Column(
+                        children: [
+                          Text('🚗', style: TextStyle(fontSize: 28)),
+                          SizedBox(height: 8),
+                          Text('Mis Vehículos',
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                    context,
-                    '/mis-incidentes',
-                    arguments: widget.token,
-                  ),
-                  child: Container(
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(12),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.05),
-                          blurRadius: 10,
-                        ),
-                      ],
-                    ),
-                    child: const Column(
-                      children: [
-                        Text('📋', style: TextStyle(fontSize: 28)),
-                        SizedBox(height: 8),
-                        Text(
-                          'Mis Emergencias',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                        ),
-                      ],
+                const SizedBox(width: 12),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      ),
+                      child: const Column(
+                        children: [
+                          Text('📋', style: TextStyle(fontSize: 28)),
+                          SizedBox(height: 8),
+                          Text('Mis Emergencias',
+                              style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        ],
+                      ),
                     ),
                   ),
                 ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildDefaultDashboard() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text('🔧', style: TextStyle(fontSize: 64)),
-          const SizedBox(height: 16),
-          const Text(
-            'Bienvenido a AutoFix!',
-            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 8),
-          if (_rol == 'taller')
-            const Text(
-              'Gestiona las solicitudes de asistencia.',
-              style: TextStyle(color: Colors.grey),
+              ],
             ),
-          if (_rol == 'administrador')
-            const Text(
-              'Panel de administración del sistema.',
-              style: TextStyle(color: Colors.grey),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
