@@ -18,3 +18,4 @@ class Usuario(Base):
 
     rol = relationship("Rol", back_populates="usuarios")
     vehiculos = relationship("Vehiculo", back_populates="usuario")
+    fcm_token = Column(String(255), nullable=True)

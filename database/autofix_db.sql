@@ -30,6 +30,7 @@ CREATE TABLE usuarios (
     fecha_registro TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     activo BOOLEAN DEFAULT TRUE,
     rol_id INTEGER REFERENCES roles(id)
+    fcm_token VARCHAR(255)
 );
 
 -- ============================================

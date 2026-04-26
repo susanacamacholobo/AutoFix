@@ -54,3 +54,14 @@ def obtener_usuario(
     if not db_usuario:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     return db_usuario
+
+@router.post("/fcm-token")
+def actualizar_fcm_token(
+    datos: dict,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """Guarda el token FCM del conductor para notificaciones push."""
+    current_user.fcm_token = datos.get("fcm_token")
+    db.commit()
+    return {"mensaje": "Token FCM actualizado correctamente"}
