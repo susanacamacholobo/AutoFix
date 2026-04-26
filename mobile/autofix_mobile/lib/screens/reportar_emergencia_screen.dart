@@ -215,7 +215,7 @@ class _ReportarEmergenciaScreenState extends State<ReportarEmergenciaScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text(
-            '¡Emergencia reportada! Un taller te contactará pronto.',
+            '¡Emergencia reportada! En unos segundos verás su estado en tiempo real.',
           ),
           backgroundColor: Colors.green,
           duration: Duration(seconds: 3),

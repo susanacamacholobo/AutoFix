@@ -17,6 +17,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _nombre = '';
   dynamic _incidenteActivo;
   Timer? _timer;
+  Map<int, Map<String, dynamic>> _tiemposEstimados = {};
 
   static const String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
 
@@ -25,7 +26,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
     super.initState();
     _decodeToken();
     _cargarIncidenteActivo();
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _cargarIncidenteActivo());
+    _timer = Timer.periodic(
+      const Duration(seconds: 30),
+      (_) => _cargarIncidenteActivo(),
+    );
   }
 
   @override
@@ -37,7 +41,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
   void _decodeToken() {
     try {
       final parts = widget.token.split('.');
-      final payload = utf8.decode(base64Url.decode(base64Url.normalize(parts[1])));
+      final payload = utf8.decode(
+        base64Url.decode(base64Url.normalize(parts[1])),
+      );
       final data = jsonDecode(payload);
       setState(() {
         _rol = (data['rol'] ?? '').toString().toLowerCase();
@@ -58,12 +64,29 @@ class _DashboardScreenState extends State<DashboardScreen> {
       );
       if (response.statusCode == 200) {
         final incidentes = jsonDecode(response.body) as List;
-        // Buscar el incidente más reciente que no esté atendido o rechazado
-        final activos = incidentes.where((i) =>
-          i['estado'] != 'atendido' && i['estado'] != 'rechazado'
-        ).toList();
+        final activos = incidentes
+            .where((i) => i['estado'] != 'atendido' && i['estado'] != 'rechazado')
+            .toList();
         setState(() {
           _incidenteActivo = activos.isNotEmpty ? activos.last : null;
+        });
+        if (_incidenteActivo != null && _incidenteActivo['tecnico_id'] != null) {
+          _cargarTiempoEstimado(_incidenteActivo['id']);
+        }
+      }
+    } catch (e) {}
+  }
+
+  Future<void> _cargarTiempoEstimado(int incidenteId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/ia/tiempo-estimado/$incidenteId'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        setState(() {
+          _tiemposEstimados[incidenteId] = data;
         });
       }
     } catch (e) {}
@@ -103,6 +126,38 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }
 
   Widget _buildLineaTiempoHorizontal(dynamic incidente) {
+    final tieneResumen = incidente['resumen_ia'] != null;
+    final tieneTaller = incidente['taller_id'] != null;
+    final tieneTecnico = incidente['tecnico_id'] != null;
+    final atendido = incidente['estado'] == 'atendido';
+
+    final tiempoEstimado = _tiemposEstimados[incidente['id']];
+    final minutos = tiempoEstimado?['minutos'];
+
+    String titulo = '';
+    String subtitulo = '';
+
+    if (atendido) {
+      titulo = 'Servicio completado';
+      subtitulo = '¡Tu vehículo ha sido atendido!';
+    } else if (tieneTecnico) {
+      titulo = 'Técnico en camino';
+      subtitulo = minutos != null
+          ? 'Tu técnico llega en aproximadamente $minutos minutos'
+          : 'Tu técnico está en camino';
+    } else if (tieneTaller) {
+      titulo = 'Técnico asignado';
+      subtitulo = minutos != null
+          ? 'Tiempo estimado de llegada: $minutos minutos'
+          : 'Pronto se te asignará un técnico';
+    } else if (tieneResumen) {
+      titulo = 'Taller asignado';
+      subtitulo = 'Estamos conectándote con un taller';
+    } else {
+      titulo = 'Procesando solicitud';
+      subtitulo = 'Estamos procesando tu solicitud';
+    }
+
     final pasos = _getPasosHorizontal(incidente);
 
     return GestureDetector(
@@ -121,36 +176,30 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Row(
               children: [
-                Text(_getTipoEmoji(incidente['tipo']),
-                    style: const TextStyle(fontSize: 20)),
+                Text(_getTipoEmoji(incidente['tipo']), style: const TextStyle(fontSize: 20)),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(
-                    'Emergencia #${incidente['id']} — ${incidente['tipo'] ?? 'Sin clasificar'}',
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                  ),
+                  child: Text(titulo,
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
                 ),
                 const Icon(Icons.chevron_right, color: Color(0xFFE63946)),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 12),
+
             Row(
               children: List.generate(pasos.length * 2 - 1, (index) {
                 if (index.isOdd) {
-                  // Línea conectora
                   final pasoIndex = index ~/ 2;
                   final completado = pasos[pasoIndex]['completado'] as bool &&
                       pasos[pasoIndex + 1]['completado'] as bool;
                   return Expanded(
                     child: Container(
                       height: 2,
-                      color: completado
-                          ? const Color(0xFFE63946)
-                          : Colors.grey.shade300,
+                      color: completado ? const Color(0xFFE63946) : Colors.grey.shade300,
                     ),
                   );
                 } else {
-                  // Círculo del paso
                   final pasoIndex = index ~/ 2;
                   final paso = pasos[pasoIndex];
                   final completado = paso['completado'] as bool;
@@ -160,9 +209,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: completado
-                              ? const Color(0xFFE63946)
-                              : Colors.grey.shade200,
+                          color: completado ? const Color(0xFFE63946) : Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
@@ -184,10 +231,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 }
               }),
             ),
-            const SizedBox(height: 8),
+
+            const SizedBox(height: 10),
+
             Text(
-              'Toca para ver el detalle completo',
-              style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
+              subtitulo,
+              style: TextStyle(
+                fontSize: 12,
+                color: Colors.grey.shade600,
+                fontStyle: FontStyle.italic,
+              ),
             ),
           ],
         ),
@@ -229,9 +282,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: _rol == 'conductor'
-          ? _buildConductorDashboard()
-          : _buildDefaultDashboard(),
+      body: _rol == 'conductor' ? _buildConductorDashboard() : _buildDefaultDashboard(),
     );
   }
 
@@ -247,14 +298,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
           Text(_email, style: const TextStyle(color: Colors.grey, fontSize: 14)),
           const SizedBox(height: 24),
 
-          // Línea de tiempo del incidente activo
           if (_incidenteActivo != null)
             _buildLineaTiempoHorizontal(_incidenteActivo),
 
-          // Botón de emergencia
           GestureDetector(
-            onTap: () => Navigator.pushNamed(
-                context, '/reportar-emergencia', arguments: widget.token),
+            onTap: () => Navigator.pushNamed(context, '/reportar-emergencia', arguments: widget.token),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -266,7 +314,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                     color: const Color(0xFFE63946).withOpacity(0.4),
                     blurRadius: 20,
                     offset: const Offset(0, 8),
-                  )
+                  ),
                 ],
               ),
               child: const Column(
@@ -290,20 +338,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
           const SizedBox(height: 24),
 
-          // Botones secundarios
           Row(
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                      context, '/mis-vehiculos', arguments: widget.token),
+                  onTap: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(
-                          color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
                     ),
                     child: const Column(
                       children: [
@@ -319,15 +364,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(
-                      context, '/mis-incidentes', arguments: widget.token),
+                  onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(
-                          color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
                     ),
                     child: const Column(
                       children: [
