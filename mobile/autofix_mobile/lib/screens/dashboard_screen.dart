@@ -19,7 +19,8 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Timer? _timer;
   Map<int, Map<String, dynamic>> _tiemposEstimados = {};
 
-  static const String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
+  static const String baseUrl =
+      'https://autofix-production-0c6c.up.railway.app';
 
   @override
   void initState() {
@@ -65,12 +66,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       if (response.statusCode == 200) {
         final incidentes = jsonDecode(response.body) as List;
         final activos = incidentes
-            .where((i) => i['estado'] != 'atendido' && i['estado'] != 'rechazado')
+            .where(
+              (i) => i['estado'] != 'atendido' && i['estado'] != 'rechazado',
+            )
             .toList();
         setState(() {
           _incidenteActivo = activos.isNotEmpty ? activos.last : null;
         });
-        if (_incidenteActivo != null && _incidenteActivo['tecnico_id'] != null) {
+        if (_incidenteActivo != null &&
+            _incidenteActivo['tecnico_id'] != null) {
           _cargarTiempoEstimado(_incidenteActivo['id']);
         }
       }
@@ -100,13 +104,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String _getTipoEmoji(String? tipo) {
     switch (tipo) {
       case 'bateria':
-      case 'batería': return '🔋';
-      case 'llanta': return '🔧';
+      case 'batería':
+        return '🔋';
+      case 'llanta':
+        return '🔧';
       case 'grua':
-      case 'grúa': return '🚗';
-      case 'choque': return '💥';
-      case 'motor': return '⚙️';
-      default: return '🚨';
+      case 'grúa':
+        return '🚗';
+      case 'choque':
+        return '💥';
+      case 'motor':
+        return '⚙️';
+      default:
+        return '🚨';
     }
   }
 
@@ -118,8 +128,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
     return [
       {'icono': '✅', 'label': 'Registrada', 'completado': true},
-      {'icono': tieneResumen ? '✅' : '⏳', 'label': 'Procesada', 'completado': tieneResumen},
-      {'icono': tieneTaller ? '🏪' : '🔍', 'label': 'Taller', 'completado': tieneTaller},
+      {
+        'icono': tieneResumen ? '✅' : '⏳',
+        'label': 'Procesada',
+        'completado': tieneResumen,
+      },
+      {
+        'icono': tieneTaller ? '🏪' : '🔍',
+        'label': 'Taller',
+        'completado': tieneTaller,
+      },
       {'icono': '👨‍🔧', 'label': 'Técnico', 'completado': tieneTecnico},
       {'icono': '✅', 'label': 'Listo', 'completado': atendido},
     ];
@@ -143,32 +161,36 @@ class _DashboardScreenState extends State<DashboardScreen> {
     } else if (tieneTecnico) {
       titulo = 'Técnico en camino';
       subtitulo = minutos != null
-          ? 'Tu técnico llega en aproximadamente $minutos minutos'
-          : 'Tu técnico está en camino';
+          ? 'El técnico llega en aproximadamente $minutos min'
+          : 'El técnico está en camino';
     } else if (tieneTaller) {
-      titulo = 'Técnico asignado';
-      subtitulo = minutos != null
-          ? 'Tiempo estimado de llegada: $minutos minutos'
-          : 'Pronto se te asignará un técnico';
+      titulo = 'Asignándote un técnico';
+      subtitulo = 'Pronto se te asignará un técnico';
     } else if (tieneResumen) {
-      titulo = 'Taller asignado';
+      titulo = 'Buscando taller';
       subtitulo = 'Estamos conectándote con un taller';
     } else {
       titulo = 'Procesando solicitud';
-      subtitulo = 'Estamos procesando tu solicitud';
+      subtitulo = 'Estamos procesando tu solicitud...';
     }
 
     final pasos = _getPasosHorizontal(incidente);
 
     return GestureDetector(
-      onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
+      onTap: () => Navigator.pushNamed(
+        context,
+        '/mis-incidentes',
+        arguments: widget.token,
+      ),
       child: Container(
         margin: const EdgeInsets.only(bottom: 24),
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12)],
+          boxShadow: [
+            BoxShadow(color: Colors.black.withOpacity(0.06), blurRadius: 12),
+          ],
           border: Border.all(color: const Color(0xFFE63946).withOpacity(0.2)),
         ),
         child: Column(
@@ -176,11 +198,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             Row(
               children: [
-                Text(_getTipoEmoji(incidente['tipo']), style: const TextStyle(fontSize: 20)),
+                Text(
+                  _getTipoEmoji(incidente['tipo']),
+                  style: const TextStyle(fontSize: 20),
+                ),
                 const SizedBox(width: 8),
                 Expanded(
-                  child: Text(titulo,
-                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15)),
+                  child: Text(
+                    titulo,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                  ),
                 ),
                 const Icon(Icons.chevron_right, color: Color(0xFFE63946)),
               ],
@@ -191,12 +221,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
               children: List.generate(pasos.length * 2 - 1, (index) {
                 if (index.isOdd) {
                   final pasoIndex = index ~/ 2;
-                  final completado = pasos[pasoIndex]['completado'] as bool &&
+                  final completado =
+                      pasos[pasoIndex]['completado'] as bool &&
                       pasos[pasoIndex + 1]['completado'] as bool;
                   return Expanded(
                     child: Container(
                       height: 2,
-                      color: completado ? const Color(0xFFE63946) : Colors.grey.shade300,
+                      color: completado
+                          ? const Color(0xFFE63946)
+                          : Colors.grey.shade300,
                     ),
                   );
                 } else {
@@ -209,12 +242,16 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         width: 32,
                         height: 32,
                         decoration: BoxDecoration(
-                          color: completado ? const Color(0xFFE63946) : Colors.grey.shade200,
+                          color: completado
+                              ? const Color(0xFFE63946)
+                              : Colors.grey.shade200,
                           shape: BoxShape.circle,
                         ),
                         child: Center(
-                          child: Text(paso['icono'] as String,
-                              style: const TextStyle(fontSize: 14)),
+                          child: Text(
+                            paso['icono'] as String,
+                            style: const TextStyle(fontSize: 14),
+                          ),
                         ),
                       ),
                       const SizedBox(height: 4),
@@ -222,8 +259,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
                         paso['label'] as String,
                         style: TextStyle(
                           fontSize: 9,
-                          color: completado ? const Color(0xFFE63946) : Colors.grey,
-                          fontWeight: completado ? FontWeight.bold : FontWeight.normal,
+                          color: completado
+                              ? const Color(0xFFE63946)
+                              : Colors.grey,
+                          fontWeight: completado
+                              ? FontWeight.bold
+                              : FontWeight.normal,
                         ),
                       ),
                     ],
@@ -261,19 +302,31 @@ class _DashboardScreenState extends State<DashboardScreen> {
             IconButton(
               icon: const Icon(Icons.directions_car),
               tooltip: 'Mis Vehículos',
-              onPressed: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/mis-vehiculos',
+                arguments: widget.token,
+              ),
             ),
           if (_rol == 'taller' || _rol == 'administrador')
             IconButton(
               icon: const Icon(Icons.engineering),
               tooltip: 'Mis Técnicos',
-              onPressed: () => Navigator.pushNamed(context, '/mis-tecnicos', arguments: widget.token),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/mis-tecnicos',
+                arguments: widget.token,
+              ),
             ),
           if (_rol == 'administrador')
             IconButton(
               icon: const Icon(Icons.manage_accounts),
               tooltip: 'Gestionar Roles',
-              onPressed: () => Navigator.pushNamed(context, '/roles', arguments: widget.token),
+              onPressed: () => Navigator.pushNamed(
+                context,
+                '/roles',
+                arguments: widget.token,
+              ),
             ),
           IconButton(
             icon: const Icon(Icons.logout),
@@ -282,7 +335,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
           ),
         ],
       ),
-      body: _rol == 'conductor' ? _buildConductorDashboard() : _buildDefaultDashboard(),
+      body: _rol == 'conductor'
+          ? _buildConductorDashboard()
+          : _buildDefaultDashboard(),
     );
   }
 
@@ -292,17 +347,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('¡Hola, $_nombre!',
-              style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold)),
+          Text(
+            '¡Hola, $_nombre!',
+            style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 4),
-          Text(_email, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+          Text(
+            _email,
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
+          ),
           const SizedBox(height: 24),
 
           if (_incidenteActivo != null)
             _buildLineaTiempoHorizontal(_incidenteActivo),
 
           GestureDetector(
-            onTap: () => Navigator.pushNamed(context, '/reportar-emergencia', arguments: widget.token),
+            onTap: () => Navigator.pushNamed(
+              context,
+              '/reportar-emergencia',
+              arguments: widget.token,
+            ),
             child: Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -321,16 +385,20 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 children: [
                   Text('🚨', style: TextStyle(fontSize: 48)),
                   SizedBox(height: 12),
-                  Text('REPORTAR EMERGENCIA',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 20,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1,
-                      )),
+                  Text(
+                    'REPORTAR EMERGENCIA',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
+                  ),
                   SizedBox(height: 4),
-                  Text('Toca aquí si necesitas ayuda mecánica',
-                      style: TextStyle(color: Colors.white70, fontSize: 13)),
+                  Text(
+                    'Toca aquí si necesitas ayuda mecánica',
+                    style: TextStyle(color: Colors.white70, fontSize: 13),
+                  ),
                 ],
               ),
             ),
@@ -342,20 +410,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
             children: [
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/mis-vehiculos', arguments: widget.token),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/mis-vehiculos',
+                    arguments: widget.token,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
                     child: const Column(
                       children: [
                         Text('🚗', style: TextStyle(fontSize: 28)),
                         SizedBox(height: 8),
-                        Text('Mis Vehículos',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text(
+                          'Mis Vehículos',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -364,20 +446,34 @@ class _DashboardScreenState extends State<DashboardScreen> {
               const SizedBox(width: 12),
               Expanded(
                 child: GestureDetector(
-                  onTap: () => Navigator.pushNamed(context, '/mis-incidentes', arguments: widget.token),
+                  onTap: () => Navigator.pushNamed(
+                    context,
+                    '/mis-incidentes',
+                    arguments: widget.token,
+                  ),
                   child: Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(12),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                        ),
+                      ],
                     ),
                     child: const Column(
                       children: [
                         Text('📋', style: TextStyle(fontSize: 28)),
                         SizedBox(height: 8),
-                        Text('Mis Emergencias',
-                            style: TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                        Text(
+                          'Mis Emergencias',
+                          style: TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 13,
+                          ),
+                        ),
                       ],
                     ),
                   ),
@@ -397,15 +493,21 @@ class _DashboardScreenState extends State<DashboardScreen> {
         children: [
           const Text('🔧', style: TextStyle(fontSize: 64)),
           const SizedBox(height: 16),
-          const Text('Bienvenido a AutoFix!',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
+          const Text(
+            'Bienvenido a AutoFix!',
+            style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
+          ),
           const SizedBox(height: 8),
           if (_rol == 'taller')
-            const Text('Gestiona las solicitudes de asistencia.',
-                style: TextStyle(color: Colors.grey)),
+            const Text(
+              'Gestiona las solicitudes de asistencia.',
+              style: TextStyle(color: Colors.grey),
+            ),
           if (_rol == 'administrador')
-            const Text('Panel de administración del sistema.',
-                style: TextStyle(color: Colors.grey)),
+            const Text(
+              'Panel de administración del sistema.',
+              style: TextStyle(color: Colors.grey),
+            ),
         ],
       ),
     );
