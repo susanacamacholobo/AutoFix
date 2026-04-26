@@ -144,53 +144,47 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
 
     return [
       {
-        'icono': '✅',
-        'titulo': 'Solicitud registrada',
-        'completado': true,
-        'esActual': !tieneResumen,
-        'subtitulo': tieneResumen
-            ? 'Solicitud registrada'
-            : 'Estamos procesando tu solicitud',
-      },
-      {
         'icono': tieneResumen ? '✅' : '⏳',
         'titulo': tieneResumen ? 'Solicitud procesada' : 'Procesando solicitud',
         'completado': tieneResumen,
-        'esActual': tieneResumen && !tieneTaller,
+        'esActual': !tieneResumen,
         'subtitulo': tieneResumen
-            ? (tieneTaller
-                  ? 'Solicitud procesada'
-                  : 'Estamos conectándote con un taller')
-            : 'Analizando tu emergencia con IA...',
+            ? 'Tu solicitud fue analizada correctamente'
+            : 'Estamos procesando tu solicitud...',
       },
       {
         'icono': tieneTaller ? '🏪' : '🔍',
-        'titulo': tieneTaller ? 'Taller asignado' : 'Taller asignado',
+        'titulo': tieneTaller ? 'Taller asignado' : 'Buscando taller',
         'completado': tieneTaller,
-        'esActual': tieneTaller && !tieneTecnico && !atendido,
+        'esActual': tieneResumen && !tieneTaller,
         'subtitulo': tieneTaller
-            ? (tieneTecnico
-                  ? 'Ya tienes un taller asignado'
-                  : minutos != null
-                  ? 'Tiempo estimado: $minutos min — Pronto se te asignará un técnico'
-                  : 'Pronto se te asignará un técnico')
-            : '',
+            ? 'Ya tienes un taller asignado'
+            : 'Estamos conectándote con un taller',
       },
       {
-        'icono': '👨‍🔧',
-        'titulo': 'Técnico en camino',
+        'icono': tieneTecnico ? '👨‍🔧' : '👨‍🔧',
+        'titulo': tieneTecnico ? 'Técnico asignado' : 'Asignándote un técnico',
+        'completado': tieneTecnico,
+        'esActual': tieneTaller && !tieneTecnico && !atendido,
+        'subtitulo': tieneTecnico
+            ? (minutos != null
+                  ? 'Tiempo estimado de llegada: $minutos min'
+                  : 'Tu técnico ha sido asignado')
+            : 'Pronto se te asignará un técnico',
+      },
+      {
+        'icono': atendido ? '✅' : '🛵',
+        'titulo': atendido ? 'El técnico llegó' : 'Técnico en camino',
         'completado': tieneTecnico,
         'esActual': tieneTecnico && !atendido,
-        'subtitulo': tieneTecnico
-            ? (atendido
-                  ? 'El técnico llegó'
-                  : minutos != null
+        'subtitulo': atendido
+            ? '¡El técnico llegó a tu ubicación!'
+            : (minutos != null
                   ? 'El técnico está en camino — llega en $minutos min'
-                  : 'El técnico está en camino')
-            : '',
+                  : 'El técnico está en camino'),
       },
       {
-        'icono': atendido ? '✅' : '🏁',
+        'icono': '✅',
         'titulo': 'Servicio completado',
         'completado': atendido,
         'esActual': atendido,
