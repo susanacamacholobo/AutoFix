@@ -127,18 +127,26 @@ class _DashboardScreenState extends State<DashboardScreen> {
     final atendido = incidente['estado'] == 'atendido';
 
     return [
-      {'icono': '✅', 'label': 'Registrada', 'completado': true},
       {
         'icono': tieneResumen ? '✅' : '⏳',
-        'label': 'Procesada',
+        'label': tieneResumen ? 'Procesada' : 'Procesando',
         'completado': tieneResumen,
       },
       {
         'icono': tieneTaller ? '🏪' : '🔍',
-        'label': 'Taller',
+        'label': tieneTaller ? 'Taller' : 'Buscando',
         'completado': tieneTaller,
       },
-      {'icono': '👨‍🔧', 'label': 'Técnico', 'completado': tieneTecnico},
+      {
+        'icono': '👨‍🔧',
+        'label': tieneTecnico ? 'Técnico' : 'Asignando',
+        'completado': tieneTecnico,
+      },
+      {
+        'icono': atendido ? '✅' : '🛵',
+        'label': atendido ? 'Llegó' : 'En camino',
+        'completado': tieneTecnico,
+      },
       {'icono': '✅', 'label': 'Listo', 'completado': atendido},
     ];
   }
