@@ -53,3 +53,13 @@ def obtener_resumen(
         "estado": incidente.estado,
         "resumen": incidente.resumen_ia
     }
+
+@router.get("/tiempo-estimado/{incidente_id}")
+def tiempo_estimado(
+    incidente_id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    """CU11 - Calcula el tiempo estimado de llegada del técnico."""
+    from app.services import asignacion_service
+    return asignacion_service.calcular_tiempo_estimado(db, incidente_id)

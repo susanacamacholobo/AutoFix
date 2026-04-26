@@ -5,11 +5,8 @@ from app.models.incidente import Incidente
 
 
 def calcular_distancia(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """
-    Calcula la distancia en kilómetros entre dos coordenadas
-    usando la fórmula de Haversine.
-    """
-    R = 6371  # Radio de la Tierra en km
+    """Calcula la distancia en km entre dos coordenadas usando Haversine."""
+    R = 6371
 
     lat1_rad = math.radians(lat1)
     lat2_rad = math.radians(lat2)
@@ -24,11 +21,46 @@ def calcular_distancia(lat1: float, lon1: float, lat2: float, lon2: float) -> fl
     return R * c
 
 
+def calcular_tiempo_estimado(db: Session, incidente_id: int) -> dict:
+    """
+    CU11 - Calcula el tiempo estimado de llegada del técnico
+    basado en la distancia entre el taller y el incidente.
+    Velocidad promedio en ciudad: 30 km/h
+    """
+    incidente = db.query(Incidente).filter(Incidente.id == incidente_id).first()
+    if not incidente:
+        return {"minutos": None, "distancia_km": None, "mensaje": "Incidente no encontrado"}
+
+    if not incidente.taller_id:
+        return {"minutos": None, "distancia_km": None, "mensaje": "Sin taller asignado"}
+
+    if not incidente.latitud or not incidente.longitud:
+        return {"minutos": None, "distancia_km": None, "mensaje": "Sin ubicación del incidente"}
+
+    taller = db.query(Taller).filter(Taller.id == incidente.taller_id).first()
+    if not taller or not taller.latitud or not taller.longitud:
+        return {"minutos": None, "distancia_km": None, "mensaje": "Sin ubicación del taller"}
+
+    distancia = calcular_distancia(
+        float(incidente.latitud), float(incidente.longitud),
+        float(taller.latitud), float(taller.longitud)
+    )
+
+    velocidad_promedio = 30  # km/h en ciudad
+    minutos = round((distancia / velocidad_promedio) * 60)
+
+    # Mínimo 5 minutos
+    minutos = max(minutos, 5)
+
+    return {
+        "distancia_km": round(distancia, 2),
+        "minutos": minutos,
+        "mensaje": f"El técnico llegará en aproximadamente {minutos} minutos"
+    }
+
+
 def obtener_talleres_candidatos(db: Session, incidente_id: int) -> list:
-    """
-    CU08 - Obtiene y ordena los talleres según distancia al incidente.
-    Retorna lista de talleres con su distancia calculada.
-    """
+    """CU08 - Obtiene y ordena los talleres según distancia al incidente."""
     incidente = db.query(Incidente).filter(Incidente.id == incidente_id).first()
     if not incidente:
         return []
@@ -60,14 +92,11 @@ def obtener_talleres_candidatos(db: Session, incidente_id: int) -> list:
             })
 
     candidatos.sort(key=lambda x: x["distancia_km"] if x["distancia_km"] is not None else 9999)
-
     return candidatos
 
 
 def asignar_taller_cercano(db: Session, incidente_id: int) -> Taller | None:
-    """
-    CU08 - Asigna automáticamente el taller más cercano al incidente.
-    """
+    """CU08 - Asigna automáticamente el taller más cercano al incidente."""
     candidatos = obtener_talleres_candidatos(db, incidente_id)
     if not candidatos:
         return None
@@ -82,5 +111,4 @@ def asignar_taller_cercano(db: Session, incidente_id: int) -> Taller | None:
         db.refresh(incidente)
 
     print(f"Taller asignado: {taller_seleccionado.nombre} a {distancia} km")
-
     return taller_seleccionado
