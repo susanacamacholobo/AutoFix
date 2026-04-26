@@ -334,7 +334,8 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
                                     fontSize: 14,
                                   ),
                                 ),
-                                if (subtitulo.isNotEmpty) ...[
+                                if (subtitulo.isNotEmpty &&
+                                    (esActual || completado)) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     subtitulo,
