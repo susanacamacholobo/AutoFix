@@ -2,7 +2,11 @@ from sqlalchemy.orm import Session
 from app.models.incidente import Incidente
 from app.models.historial import Historial
 from app.models.tecnico import Tecnico
+from app.models.usuario import Usuario
+from app.models.taller import Taller
 from app.schemas.incidente import IncidenteCreate, IncidenteUpdate
+from app.services import notificacion_service
+from app.services import asignacion_service
 
 def get_incidentes(db: Session):
     return db.query(Incidente).all()
@@ -40,6 +44,9 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
     estado_anterior = db_incidente.estado
     tecnico_anterior_id = db_incidente.tecnico_id
 
+    # Obtener el conductor para notificaciones
+    conductor = db.query(Usuario).filter(Usuario.id == db_incidente.usuario_id).first()
+
     # Si el taller rechaza
     if datos.estado == 'rechazado':
         historial = Historial(
@@ -66,6 +73,16 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
             tecnico.disponible = False
             db.add(tecnico)
 
+            # CU12 - Notificar al conductor que se asignó un técnico
+            if conductor and conductor.fcm_token:
+                tiempo = asignacion_service.calcular_tiempo_estimado(db, id)
+                minutos = tiempo.get('minutos')
+                notificacion_service.notificar_tecnico_asignado(
+                    fcm_token=conductor.fcm_token,
+                    tecnico_nombre=f"{tecnico.nombre} {tecnico.apellido}",
+                    minutos=minutos
+                )
+
         # Si había un técnico anterior, liberarlo
         if tecnico_anterior_id:
             tecnico_anterior = db.query(Tecnico).filter(Tecnico.id == tecnico_anterior_id).first()
@@ -79,6 +96,21 @@ def actualizar_incidente(db: Session, id: int, datos: IncidenteUpdate, taller_id
         if tecnico:
             tecnico.disponible = True
             db.add(tecnico)
+
+        # CU12 - Notificar al conductor que el servicio fue completado
+        if conductor and conductor.fcm_token:
+            notificacion_service.notificar_servicio_completado(
+                fcm_token=conductor.fcm_token
+            )
+
+    # CU12 - Notificar cuando el taller acepta la solicitud
+    if datos.estado == 'en_proceso' and estado_anterior == 'pendiente':
+        taller = db.query(Taller).filter(Taller.id == taller_id).first()
+        if conductor and conductor.fcm_token and taller:
+            notificacion_service.notificar_taller_aceptado(
+                fcm_token=conductor.fcm_token,
+                taller_nombre=taller.nombre
+            )
 
     # Guardar historial si cambia el estado
     if datos.estado and datos.estado != estado_anterior:
