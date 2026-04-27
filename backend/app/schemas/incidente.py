@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from typing import Optional
+from decimal import Decimal
 
 class IncidenteBase(BaseModel):
     descripcion: Optional[str] = None
@@ -29,6 +30,9 @@ class IncidenteResponse(IncidenteBase):
     fecha_creacion: datetime
     fecha_atencion: Optional[datetime] = None
     resumen_ia: Optional[str] = None
+    monto: Optional[Decimal] = None
+    comision: Optional[Decimal] = None
+    estado_pago: Optional[str] = 'pendiente'
 
     class Config:
         from_attributes = True
