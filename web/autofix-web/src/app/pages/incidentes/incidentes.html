@@ -139,6 +139,26 @@
             </div>
           </div>
 
+          <!-- Información de pago -->
+          <div class="pago-section" *ngIf="incidenteSeleccionado.estado_pago === 'pagado'">
+            <h3>💰 Información de Pago</h3>
+            <div class="pago-bloques">
+              <div class="pago-row">
+                <span class="pago-label">Monto cobrado:</span>
+                <span class="pago-valor">{{ incidenteSeleccionado.monto }} Bs</span>
+              </div>
+              <div class="pago-row">
+                <span class="pago-label">Comisión plataforma (10%):</span>
+                <span class="pago-valor comision">- {{ incidenteSeleccionado.comision }} Bs</span>
+              </div>
+              <div class="pago-row total">
+                <span class="pago-label">Monto neto recibido:</span>
+                <span class="pago-valor neto">{{ incidenteSeleccionado.monto - incidenteSeleccionado.comision }}
+                  Bs</span>
+              </div>
+            </div>
+          </div>
+
           <!-- Evidencias del incidente -->
           <div class="fotos-section" *ngIf="evidencias.length > 0">
             <h3>Evidencias enviadas</h3>

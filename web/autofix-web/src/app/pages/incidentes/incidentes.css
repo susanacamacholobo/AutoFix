@@ -416,3 +416,57 @@
   margin: 0;
   line-height: 1.5;
 }
+
+.pago-section {
+  margin-bottom: 20px;
+  padding: 16px;
+  background-color: #f0fff4;
+  border-radius: 10px;
+  border-left: 4px solid #28a745;
+}
+
+.pago-section h3 {
+  font-size: 1rem;
+  color: #155724;
+  margin: 0 0 12px;
+}
+
+.pago-bloques {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pago-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #c3e6cb;
+}
+
+.pago-row.total {
+  border-bottom: none;
+  padding-top: 12px;
+  margin-top: 4px;
+}
+
+.pago-label {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.pago-valor {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #333;
+}
+
+.pago-valor.comision {
+  color: #e63946;
+}
+
+.pago-valor.neto {
+  color: #28a745;
+  font-size: 1.1rem;
+}
