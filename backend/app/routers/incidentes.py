@@ -112,3 +112,43 @@ def actualizar_incidente(
     if not db_incidente:
         raise HTTPException(status_code=404, detail="Incidente no encontrado")
     return db_incidente
+
+@router.post("/{id}/pagar")
+def pagar_incidente(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: Usuario = Depends(get_current_user)
+):
+    db_incidente = incidente_service.get_incidente_por_id(db, id)
+    if not db_incidente:
+        raise HTTPException(status_code=404, detail="Incidente no encontrado")
+    if db_incidente.estado != 'atendido':
+        raise HTTPException(status_code=400, detail="El servicio aún no está completado")
+    if db_incidente.estado_pago == 'pagado':
+        raise HTTPException(status_code=400, detail="El servicio ya fue pagado")
+
+    # Calcular monto según tipo
+    montos = {
+        'bateria': 150,
+        'llanta': 100,
+        'motor': 300,
+        'choque': 500,
+        'grua': 400,
+        'otro': 200,
+        'desconocido': 200,
+    }
+    monto = montos.get(db_incidente.tipo, 200)
+    comision = round(monto * 0.10, 2)
+
+    db_incidente.monto = monto
+    db_incidente.comision = comision
+    db_incidente.estado_pago = 'pagado'
+    db.commit()
+    db.refresh(db_incidente)
+
+    return {
+        "mensaje": "Pago realizado exitosamente",
+        "monto": monto,
+        "comision": comision,
+        "monto_taller": round(monto - comision, 2)
+    }
