@@ -97,6 +97,9 @@ CREATE TABLE incidentes (
     estado VARCHAR(20) DEFAULT 'pendiente',
     fecha_creacion TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     fecha_atencion TIMESTAMP
+    monto DECIMAL(10,2),
+    estado_pago VARCHAR(20) DEFAULT 'pendiente',
+    comision DECIMAL(10,2)
 );
 
 -- ============================================
