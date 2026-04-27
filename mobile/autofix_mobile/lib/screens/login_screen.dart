@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
+import 'package:http/http.dart' as http;
 import '../services/auth_service.dart';
 
 class LoginScreen extends StatefulWidget {
@@ -16,6 +18,26 @@ class _LoginScreenState extends State<LoginScreen> {
   bool _mostrarContrasena = false;
   String _error = '';
 
+  static const String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
+
+  Future<void> _enviarTokenFCM(String token) async {
+    try {
+      final fcmToken = await FirebaseMessaging.instance.getToken();
+      if (fcmToken == null) return;
+      await http.post(
+        Uri.parse('$baseUrl/usuarios/fcm-token'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: '{"fcm_token": "$fcmToken"}',
+      );
+      print('Token FCM enviado: $fcmToken');
+    } catch (e) {
+      print('Error enviando token FCM: $e');
+    }
+  }
+
   void _iniciarSesion() async {
     setState(() {
       _cargando = true;
@@ -29,7 +51,9 @@ class _LoginScreenState extends State<LoginScreen> {
       );
 
       if (respuesta['access_token'] != null) {
-        Navigator.pushReplacementNamed(context, '/dashboard', arguments: respuesta['access_token']);
+        final token = respuesta['access_token'];
+        await _enviarTokenFCM(token);
+        Navigator.pushReplacementNamed(context, '/dashboard', arguments: token);
       }
     } catch (e) {
       setState(() {
@@ -76,23 +100,16 @@ class _LoginScreenState extends State<LoginScreen> {
                   ),
                   child: const Column(
                     children: [
-                      Text(
-                        'AutoFix',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 32,
-                          fontWeight: FontWeight.w800,
-                          letterSpacing: 2,
-                        ),
-                      ),
+                      Text('AutoFix',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 32,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 2,
+                          )),
                       SizedBox(height: 8),
-                      Text(
-                        'Plataforma de Emergencias Vehiculares',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontSize: 13,
-                        ),
-                      ),
+                      Text('Plataforma de Emergencias Vehiculares',
+                          style: TextStyle(color: Colors.white, fontSize: 13)),
                     ],
                   ),
                 ),
@@ -101,13 +118,8 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Iniciar Sesión',
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
+                      const Text('Iniciar Sesión',
+                          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                       const SizedBox(height: 24),
                       const Text('Email'),
                       const SizedBox(height: 6),
@@ -116,9 +128,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         keyboardType: TextInputType.emailAddress,
                         decoration: InputDecoration(
                           hintText: 'tucorreo@gmail.com',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: Color(0xFFE63946)),
@@ -133,9 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         obscureText: !_mostrarContrasena,
                         decoration: InputDecoration(
                           hintText: '••••••••',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(8),
-                          ),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
                           focusedBorder: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(8),
                             borderSide: const BorderSide(color: Color(0xFFE63946)),
@@ -145,11 +153,8 @@ class _LoginScreenState extends State<LoginScreen> {
                               _mostrarContrasena ? Icons.visibility : Icons.visibility_off,
                               color: const Color(0xFFE63946),
                             ),
-                            onPressed: () {
-                              setState(() {
-                                _mostrarContrasena = !_mostrarContrasena;
-                              });
-                            },
+                            onPressed: () =>
+                                setState(() => _mostrarContrasena = !_mostrarContrasena),
                           ),
                         ),
                       ),
@@ -161,11 +166,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             color: const Color(0xFFFFF0F0),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: Text(
-                            _error,
-                            style: const TextStyle(color: Color(0xFFE63946)),
-                            textAlign: TextAlign.center,
-                          ),
+                          child: Text(_error,
+                              style: const TextStyle(color: Color(0xFFE63946)),
+                              textAlign: TextAlign.center),
                         ),
                       ],
                       const SizedBox(height: 8),
@@ -173,10 +176,8 @@ class _LoginScreenState extends State<LoginScreen> {
                         alignment: Alignment.centerRight,
                         child: TextButton(
                           onPressed: () {},
-                          child: const Text(
-                            '¿Olvidaste tu contraseña?',
-                            style: TextStyle(color: Color(0xFFE63946)),
-                          ),
+                          child: const Text('¿Olvidaste tu contraseña?',
+                              style: TextStyle(color: Color(0xFFE63946))),
                         ),
                       ),
                       const SizedBox(height: 8),
@@ -188,29 +189,29 @@ class _LoginScreenState extends State<LoginScreen> {
                             backgroundColor: const Color(0xFFE63946),
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(8),
-                            ),
+                                borderRadius: BorderRadius.circular(8)),
                           ),
                           child: _cargando
                               ? const CircularProgressIndicator(color: Colors.white)
-                              : const Text(
-                                  'Ingresar',
+                              : const Text('Ingresar',
                                   style: TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 16,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w600)),
                         ),
                       ),
                       const SizedBox(height: 16),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          const Text('¿No tienes cuenta? ', style: TextStyle(color: Colors.grey)),
+                          const Text('¿No tienes cuenta? ',
+                              style: TextStyle(color: Colors.grey)),
                           GestureDetector(
                             onTap: () => Navigator.pushNamed(context, '/registro'),
-                            child: const Text('Regístrate aquí', style: TextStyle(color: Color(0xFFE63946), fontWeight: FontWeight.bold)),
+                            child: const Text('Regístrate aquí',
+                                style: TextStyle(
+                                    color: Color(0xFFE63946),
+                                    fontWeight: FontWeight.bold)),
                           ),
                         ],
                       ),
