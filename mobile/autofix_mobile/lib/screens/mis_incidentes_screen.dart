@@ -20,17 +20,13 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
   Timer? _timer;
   Map<int, Map<String, dynamic>> _tiemposEstimados = {};
 
-  static const String baseUrl =
-      'https://autofix-production-0c6c.up.railway.app';
+  static const String baseUrl = 'https://autofix-production-0c6c.up.railway.app';
 
   @override
   void initState() {
     super.initState();
     _cargarIncidentes();
-    _timer = Timer.periodic(
-      const Duration(seconds: 30),
-      (_) => _cargarIncidentes(),
-    );
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) => _cargarIncidentes());
   }
 
   @override
@@ -41,17 +37,13 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
 
   Future<void> _cargarIncidentes() async {
     try {
-      final incidentes = await _incidenteService.listarMisIncidentes(
-        widget.token,
-      );
+      final incidentes = await _incidenteService.listarMisIncidentes(widget.token);
       setState(() {
         _incidentes = incidentes;
         _cargando = false;
       });
-      // Cargar tiempos estimados para incidentes con técnico asignado
       for (final incidente in incidentes) {
-        if (incidente['tecnico_id'] != null &&
-            incidente['estado'] != 'atendido') {
+        if (incidente['tecnico_id'] != null && incidente['estado'] != 'atendido') {
           _cargarTiempoEstimado(incidente['id']);
         }
       }
@@ -75,52 +67,75 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
     } catch (e) {}
   }
 
+  int _getMonto(String? tipo) {
+    switch (tipo) {
+      case 'bateria':
+      case 'batería': return 150;
+      case 'llanta': return 100;
+      case 'motor': return 300;
+      case 'choque': return 500;
+      case 'grua':
+      case 'grúa': return 400;
+      default: return 200;
+    }
+  }
+
+  Future<void> _realizarPago(dynamic incidente) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/incidentes/${incidente['id']}/pagar'),
+        headers: {'Authorization': 'Bearer ${widget.token}'},
+      );
+      if (response.statusCode == 200) {
+        Navigator.pop(context);
+        _cargarIncidentes();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text('¡Pago realizado exitosamente!'),
+            backgroundColor: Color(0xFF10B981),
+          ),
+        );
+      }
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Error al realizar el pago'),
+          backgroundColor: Color(0xFFE63946),
+        ),
+      );
+    }
+  }
+
   Color _getEstadoColor(String estado) {
     switch (estado) {
-      case 'pendiente':
-        return const Color(0xFFF59E0B);
-      case 'en_proceso':
-        return const Color(0xFF3B82F6);
-      case 'atendido':
-        return const Color(0xFF10B981);
-      case 'rechazado':
-        return const Color(0xFFE63946);
-      default:
-        return Colors.grey;
+      case 'pendiente': return const Color(0xFFF59E0B);
+      case 'en_proceso': return const Color(0xFF3B82F6);
+      case 'atendido': return const Color(0xFF10B981);
+      case 'rechazado': return const Color(0xFFE63946);
+      default: return Colors.grey;
     }
   }
 
   String _getEstadoTexto(String estado) {
     switch (estado) {
-      case 'pendiente':
-        return 'Pendiente';
-      case 'en_proceso':
-        return 'En Proceso';
-      case 'atendido':
-        return 'Atendido';
-      case 'rechazado':
-        return 'Rechazado';
-      default:
-        return estado;
+      case 'pendiente': return 'Pendiente';
+      case 'en_proceso': return 'En Proceso';
+      case 'atendido': return 'Atendido';
+      case 'rechazado': return 'Rechazado';
+      default: return estado;
     }
   }
 
   String _getTipoEmoji(String? tipo) {
     switch (tipo) {
       case 'bateria':
-      case 'batería':
-        return '🔋';
-      case 'llanta':
-        return '🔧';
+      case 'batería': return '🔋';
+      case 'llanta': return '🔧';
       case 'grua':
-      case 'grúa':
-        return '🚗';
-      case 'choque':
-        return '💥';
-      case 'motor':
-        return '⚙️';
-      default:
-        return '🚨';
+      case 'grúa': return '🚗';
+      case 'choque': return '💥';
+      case 'motor': return '⚙️';
+      default: return '🚨';
     }
   }
 
@@ -162,14 +177,14 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
             : 'Estamos conectándote con un taller',
       },
       {
-        'icono': tieneTecnico ? '👨‍🔧' : '👨‍🔧',
+        'icono': '👨‍🔧',
         'titulo': tieneTecnico ? 'Técnico asignado' : 'Asignándote un técnico',
         'completado': tieneTecnico,
         'esActual': tieneTaller && !tieneTecnico && !atendido,
         'subtitulo': tieneTecnico
             ? (minutos != null
-                  ? 'Tiempo estimado de llegada: $minutos min'
-                  : 'Tu técnico ha sido asignado')
+                ? 'Tiempo estimado de llegada: $minutos min'
+                : 'Tu técnico ha sido asignado')
             : 'Pronto se te asignará un técnico',
       },
       {
@@ -180,8 +195,8 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
         'subtitulo': atendido
             ? '¡El técnico llegó a tu ubicación!'
             : (minutos != null
-                  ? 'El técnico está en camino — llega en $minutos min'
-                  : 'El técnico está en camino'),
+                ? 'El técnico está en camino — llega en $minutos min'
+                : 'El técnico está en camino'),
       },
       {
         'icono': '✅',
@@ -195,6 +210,8 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
 
   Widget _buildDetalle(dynamic incidente) {
     final pasos = _getPasos(incidente);
+    final monto = _getMonto(incidente['tipo']);
+    final comision = (monto * 0.10).toStringAsFixed(0);
 
     return DraggableScrollableSheet(
       initialChildSize: 0.85,
@@ -213,8 +230,7 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
             children: [
               Center(
                 child: Container(
-                  width: 40,
-                  height: 4,
+                  width: 40, height: 4,
                   decoration: BoxDecoration(
                     color: Colors.grey.shade300,
                     borderRadius: BorderRadius.circular(2),
@@ -224,29 +240,17 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
               const SizedBox(height: 16),
               Row(
                 children: [
-                  Text(
-                    _getTipoEmoji(incidente['tipo']),
-                    style: const TextStyle(fontSize: 28),
-                  ),
+                  Text(_getTipoEmoji(incidente['tipo']),
+                      style: const TextStyle(fontSize: 28)),
                   const SizedBox(width: 12),
                   Expanded(
-                    child: Text(
-                      'Emergencia #${incidente['id']}',
-                      style: const TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
+                    child: Text('Emergencia #${incidente['id']}',
+                        style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
-                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
-                      color: _getEstadoColor(
-                        incidente['estado'],
-                      ).withOpacity(0.15),
+                      color: _getEstadoColor(incidente['estado']).withOpacity(0.15),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Text(
@@ -284,32 +288,25 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
                         Column(
                           children: [
                             Container(
-                              width: 36,
-                              height: 36,
+                              width: 36, height: 36,
                               decoration: BoxDecoration(
                                 color: completado
                                     ? const Color(0xFFE63946)
                                     : esActual
-                                    ? const Color(0xFFE63946).withOpacity(0.3)
-                                    : Colors.grey.shade200,
+                                        ? const Color(0xFFE63946).withOpacity(0.3)
+                                        : Colors.grey.shade200,
                                 shape: BoxShape.circle,
                               ),
                               child: Center(
-                                child: Text(
-                                  paso['icono'] as String,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
+                                child: Text(paso['icono'] as String,
+                                    style: const TextStyle(fontSize: 16)),
                               ),
                             ),
                             if (!esUltimo)
                               Container(
-                                width: 2,
-                                height: 40,
-                                color:
-                                    completado &&
-                                        (index + 1 < pasos.length &&
-                                            (pasos[index + 1]['completado']
-                                                as bool))
+                                width: 2, height: 40,
+                                color: completado && (index + 1 < pasos.length &&
+                                        (pasos[index + 1]['completado'] as bool))
                                     ? const Color(0xFFE63946)
                                     : Colors.grey.shade300,
                               ),
@@ -334,8 +331,7 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
                                     fontSize: 14,
                                   ),
                                 ),
-                                if (subtitulo.isNotEmpty &&
-                                    (esActual || completado)) ...[
+                                if (subtitulo.isNotEmpty && (esActual || completado)) ...[
                                   const SizedBox(height: 2),
                                   Text(
                                     subtitulo,
@@ -363,21 +359,13 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
 
               _buildInfoRow('Tipo', incidente['tipo'] ?? 'Sin clasificar'),
               _buildInfoRow('Prioridad', incidente['prioridad'] ?? 'media'),
-              _buildInfoRow(
-                'Descripción',
-                incidente['descripcion'] ?? 'Sin descripción',
-              ),
-              _buildInfoRow(
-                'Fecha',
-                incidente['fecha_creacion']?.substring(0, 10) ?? '',
-              ),
+              _buildInfoRow('Descripción', incidente['descripcion'] ?? 'Sin descripción'),
+              _buildInfoRow('Fecha', incidente['fecha_creacion']?.substring(0, 10) ?? ''),
 
               if (incidente['resumen_ia'] != null) ...[
                 const SizedBox(height: 16),
-                const Text(
-                  'Análisis de IA',
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                ),
+                const Text('Análisis de IA',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.all(12),
@@ -390,16 +378,77 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
                   ),
                   child: Text(
                     incidente['resumen_ia'],
-                    style: const TextStyle(
-                      fontSize: 13,
-                      color: Color(0xFF444444),
-                      height: 1.5,
-                    ),
+                    style: const TextStyle(fontSize: 13, color: Color(0xFF444444), height: 1.5),
                   ),
                 ),
               ],
 
               const SizedBox(height: 24),
+
+              // Botón de pago
+              if (incidente['estado'] == 'atendido' && incidente['estado_pago'] != 'pagado') ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFF0FFF4),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: const Color(0xFF10B981)),
+                  ),
+                  child: Column(
+                    children: [
+                      const Text('💳 Resumen del servicio',
+                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                      const SizedBox(height: 8),
+                      Text('Monto total: $monto Bs',
+                          style: const TextStyle(fontSize: 14, color: Color(0xFF333333))),
+                      Text('Comisión plataforma (10%): $comision Bs',
+                          style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                      const SizedBox(height: 12),
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton.icon(
+                          onPressed: () => _realizarPago(incidente),
+                          icon: const Icon(Icons.payment, color: Colors.white),
+                          label: const Text('Realizar Pago',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: const Color(0xFF10B981),
+                            padding: const EdgeInsets.symmetric(vertical: 12),
+                            shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8)),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
+              // Ya pagado
+              if (incidente['estado_pago'] == 'pagado') ...[
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFD4EDDA),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: const Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.check_circle, color: Color(0xFF155724)),
+                      SizedBox(width: 8),
+                      Text('Pago realizado ✅',
+                          style: TextStyle(
+                              color: Color(0xFF155724), fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 12),
+              ],
+
               SizedBox(
                 width: double.infinity,
                 child: OutlinedButton.icon(
@@ -408,10 +457,8 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
                     _cargarIncidentes();
                   },
                   icon: const Icon(Icons.refresh, color: Color(0xFFE63946)),
-                  label: const Text(
-                    'Actualizar estado',
-                    style: TextStyle(color: Color(0xFFE63946)),
-                  ),
+                  label: const Text('Actualizar estado',
+                      style: TextStyle(color: Color(0xFFE63946))),
                   style: OutlinedButton.styleFrom(
                     side: const BorderSide(color: Color(0xFFE63946)),
                     padding: const EdgeInsets.symmetric(vertical: 12),
@@ -433,19 +480,11 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
         children: [
           SizedBox(
             width: 100,
-            child: Text(
-              label,
-              style: const TextStyle(
-                fontWeight: FontWeight.w600,
-                color: Colors.grey,
-              ),
-            ),
+            child: Text(label,
+                style: const TextStyle(fontWeight: FontWeight.w600, color: Colors.grey)),
           ),
           Expanded(
-            child: Text(
-              value,
-              style: const TextStyle(color: Color(0xFF333333)),
-            ),
+            child: Text(value, style: const TextStyle(color: Color(0xFF333333))),
           ),
         ],
       ),
@@ -468,150 +507,113 @@ class _MisIncidentesScreenState extends State<MisIncidentesScreen> {
         ],
       ),
       body: _cargando
-          ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFE63946)),
-            )
+          ? const Center(child: CircularProgressIndicator(color: Color(0xFFE63946)))
           : _incidentes.isEmpty
-          ? const Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('🎉', style: TextStyle(fontSize: 48)),
-                  SizedBox(height: 16),
-                  Text(
-                    'No tienes emergencias registradas',
-                    style: TextStyle(color: Colors.grey, fontSize: 16),
+              ? const Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('🎉', style: TextStyle(fontSize: 48)),
+                      SizedBox(height: 16),
+                      Text('No tienes emergencias registradas',
+                          style: TextStyle(color: Colors.grey, fontSize: 16)),
+                    ],
                   ),
-                ],
-              ),
-            )
-          : RefreshIndicator(
-              onRefresh: _cargarIncidentes,
-              color: const Color(0xFFE63946),
-              child: ListView.builder(
-                padding: const EdgeInsets.all(16),
-                itemCount: _incidentes.length,
-                itemBuilder: (context, index) {
-                  final incidente = _incidentes[index];
-                  return GestureDetector(
-                    onTap: () => _verDetalle(incidente),
-                    child: Container(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      padding: const EdgeInsets.all(16),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.05),
-                            blurRadius: 10,
+                )
+              : RefreshIndicator(
+                  onRefresh: _cargarIncidentes,
+                  color: const Color(0xFFE63946),
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _incidentes.length,
+                    itemBuilder: (context, index) {
+                      final incidente = _incidentes[index];
+                      return GestureDetector(
+                        onTap: () => _verDetalle(incidente),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 12),
+                          padding: const EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            boxShadow: [BoxShadow(
+                                color: Colors.black.withOpacity(0.05),
+                                blurRadius: 10)],
                           ),
-                        ],
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Text(
-                                    _getTipoEmoji(incidente['tipo']),
-                                    style: const TextStyle(fontSize: 24),
+                                  Row(
+                                    children: [
+                                      Text(_getTipoEmoji(incidente['tipo']),
+                                          style: const TextStyle(fontSize: 24)),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        incidente['tipo'] ?? 'Sin clasificar',
+                                        style: const TextStyle(
+                                            fontWeight: FontWeight.bold, fontSize: 16),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    incidente['tipo'] ?? 'Sin clasificar',
-                                    style: const TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16,
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 10, vertical: 4),
+                                    decoration: BoxDecoration(
+                                      color: _getEstadoColor(incidente['estado'])
+                                          .withOpacity(0.15),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      _getEstadoTexto(incidente['estado']),
+                                      style: TextStyle(
+                                        color: _getEstadoColor(incidente['estado']),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 12,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: _getEstadoColor(
-                                    incidente['estado'],
-                                  ).withOpacity(0.15),
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Text(
-                                  _getEstadoTexto(incidente['estado']),
-                                  style: TextStyle(
-                                    color: _getEstadoColor(incidente['estado']),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 12,
+                              if (incidente['descripcion'] != null) ...[
+                                const SizedBox(height: 8),
+                                Text(incidente['descripcion'],
+                                    style: const TextStyle(color: Colors.grey, fontSize: 13),
+                                    maxLines: 2,
+                                    overflow: TextOverflow.ellipsis),
+                              ],
+                              const SizedBox(height: 8),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text('Prioridad: ${incidente['prioridad']}',
+                                      style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                  Text(
+                                    incidente['fecha_creacion']?.substring(0, 10) ?? '',
+                                    style: const TextStyle(fontSize: 12, color: Colors.grey),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
-                          ),
-                          if (incidente['descripcion'] != null) ...[
-                            const SizedBox(height: 8),
-                            Text(
-                              incidente['descripcion'],
-                              style: const TextStyle(
-                                color: Colors.grey,
-                                fontSize: 13,
-                              ),
-                              maxLines: 2,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                          const SizedBox(height: 8),
-                          Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Prioridad: ${incidente['prioridad']}',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              Text(
-                                incidente['fecha_creacion']?.substring(0, 10) ??
-                                    '',
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                            ],
-                          ),
-                          if (incidente['taller_id'] != null) ...[
-                            const SizedBox(height: 4),
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.store,
-                                  size: 14,
-                                  color: Color(0xFFE63946),
-                                ),
-                                const SizedBox(width: 4),
-                                const Text(
-                                  'Taller asignado',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Color(0xFFE63946),
-                                  ),
+                              if (incidente['taller_id'] != null) ...[
+                                const SizedBox(height: 4),
+                                Row(
+                                  children: [
+                                    const Icon(Icons.store, size: 14, color: Color(0xFFE63946)),
+                                    const SizedBox(width: 4),
+                                    const Text('Taller asignado',
+                                        style: TextStyle(fontSize: 12, color: Color(0xFFE63946))),
+                                  ],
                                 ),
                               ],
-                            ),
-                          ],
-                        ],
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
     );
   }
 }
