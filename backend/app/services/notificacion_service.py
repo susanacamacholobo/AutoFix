@@ -1,12 +1,16 @@
 import os
+import json
 import firebase_admin
 from firebase_admin import credentials, messaging
 
-# Inicializar Firebase Admin solo una vez
 if not firebase_admin._apps:
-    cred = credentials.Certificate("firebase-credentials.json")
+    firebase_json = os.getenv("FIREBASE_CREDENTIALS_JSON")
+    if firebase_json:
+        cred_dict = json.loads(firebase_json)
+        cred = credentials.Certificate(cred_dict)
+    else:
+        cred = credentials.Certificate("firebase-credentials.json")
     firebase_admin.initialize_app(cred)
-
 
 def enviar_notificacion(fcm_token: str, titulo: str, cuerpo: str, datos: dict = None):
     """Envía una notificación push a un dispositivo específico."""
